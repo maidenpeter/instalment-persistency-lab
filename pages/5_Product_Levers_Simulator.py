@@ -20,38 +20,42 @@ sim_cfg = cfg["simulator"]
 
 @st.cache_resource(show_spinner="Fitting the simulator inputs...")
 def inputs() -> SM.Inputs:
-    return SM.build_inputs(ui.q, cfg)
+    art = ui.artifacts()
+    return art["sim_inputs"] if art else SM.build_inputs(ui.q, cfg)
 
 
 inp = inputs()
-BASE = SM.Scenario(deposit=sim_cfg["base_deposit"], n_instalments=sim_cfg["base_instalments"],
-                   grace_days=cfg["product"]["grace_days"], waiting=dict(cfg["waiting_months"]))
+PRE = (ui.artifacts() or {}).get("sim_cache", {})
+BASE = SM.base_scenario(cfg)
+DEFAULT = SM.default_scenario(cfg)
 
 
 @st.cache_data(show_spinner=False, max_entries=200)
 def run(scn_dict: dict, n_runs: int) -> dict:
-    return SM.simulate(inp, SM.Scenario(**scn_dict), n_runs=n_runs)
+    scn = SM.Scenario(**scn_dict)
+    hit = PRE.get(("run", SM.key(scn), n_runs))
+    return hit if hit is not None else SM.simulate(inp, scn, n_runs=n_runs)
 
 
 @st.cache_data(show_spinner=False, max_entries=100)
 def breakeven(scn_dict: dict) -> float | None:
-    return SM.break_even_loading(inp, SM.Scenario(**scn_dict), n_runs=1)
+    scn = SM.Scenario(**scn_dict)
+    k = ("breakeven", SM.key(scn))
+    return PRE[k] if k in PRE else SM.break_even_loading(inp, scn, n_runs=1)
 
 
 @st.cache_data(show_spinner=False, max_entries=50)
 def deposit_curve(scn_dict: dict) -> pd.DataFrame:
-    rows = []
-    for d in [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40]:
-        o = SM.simulate(inp, SM.Scenario(**dict(scn_dict, deposit=d)), n_runs=1)
-        rows.append({"deposit": d, "margin_per_policy": o["margin_per_policy"], "leakage_per_policy": o["leakage_per_policy"]})
-    return pd.DataFrame(rows)
+    scn = SM.Scenario(**scn_dict)
+    hit = PRE.get(("deposit_curve", SM.key(scn)))
+    return hit if hit is not None else SM.deposit_curve(inp, scn)
 
 
 # ------------------------------------------------------------- levers
 with st.form("levers"):
     st.markdown("**Product levers** (opens on an example redesign: 20% deposit, benefits unlock with premium paid)")
     c1, c2, c3 = st.columns(3)
-    deposit = c1.slider("Deposit, % of annual premium", 10, 40, 20, step=5) / 100
+    deposit = c1.slider("Deposit, % of annual premium", 10, 40, int(round(DEFAULT.deposit * 100)), step=5) / 100
     n_inst = c1.slider("Number of monthly instalments", 1, 10, BASE.n_instalments)
     grace = c1.slider("Grace period, days", 0, 30, BASE.grace_days,
                       help=f"Cover is suspended after grace; the policy lapses {cfg['product']['reinstatement_days']} days later if still unpaid.")
@@ -59,7 +63,7 @@ with st.form("levers"):
     w_ip = c2.slider("Waiting period, inpatient (months)", 0, 6, BASE.waiting["inpatient"])
     w_mat = c2.slider("Waiting period, maternity (months)", 0, 12, BASE.waiting["maternity"])
     w_chr = c2.slider("Waiting period, chronic (months)", 0, 12, BASE.waiting["chronic"])
-    release = c3.radio("Benefit release", ["Full cover from first payment", "Benefits unlock with premium paid"], index=1,
+    release = c3.radio("Benefit release", ["Full cover from first payment", "Benefits unlock with premium paid"], index=1 if DEFAULT.release == "proportional" else 0,
                        help="Unlocking: each benefit limit is available in proportion to the share of annual premium paid so far.")
     loading = c3.slider("Instalment loading, % of premium", 0, 30, 0, step=1) / 100
     elasticity = c3.slider("Sign-up elasticity to deposit (assumption)", 0.0, 1.0, float(sim_cfg["default_signup_elasticity"]), step=0.05,
@@ -103,7 +107,8 @@ rows = [
      1000 * (s["leakage_per_policy"] - b["leakage_per_policy"]), False, "kes"),
     ("Premium collected per policy", ui.kes(b["collected_per_policy"]), ui.kes(s["collected_per_policy"]), s["collected_per_policy"] - b["collected_per_policy"], True, "kes"),
     ("Margin per policy after claims and expenses", ui.kes(b["margin_per_policy"]), ui.kes(s["margin_per_policy"]), s["margin_per_policy"] - b["margin_per_policy"], True, "kes"),
-    ("Loading needed to break even", fmt_be(be_base), fmt_be(be_scn), None, False, ""),
+    ("Loading needed to break even", fmt_be(be_base), fmt_be(be_scn),
+     None if be_base is None or be_scn is None else be_scn - be_base, False, "pts"),
     ("New business volume (assumption)", "100.0%", ui.pct(sign_s), sign_s - 1, True, "pts"),
     ("Annual book margin", ui.kes(book_b, short=True), ui.kes(book_s, short=True), book_s - book_b, True, "kes"),
 ]
@@ -118,7 +123,16 @@ def delta(v, good_up, unit):
 
 
 cmp = pd.DataFrame([{"Measure": r[0], "Base case": r[1], "Scenario": r[2], "Change": delta(r[3], r[4], r[5])} for r in rows])
-st.dataframe(cmp, hide_index=True, use_container_width=True)
+def _tone(v: str) -> str:
+    if v.endswith("better"):
+        return "color: #006300; font-weight: 600"
+    if v.endswith("worse"):
+        return "color: #b42b2b; font-weight: 600"
+    return ""
+
+
+st.dataframe(cmp.style.map(_tone, subset=["Change"]), hide_index=True, use_container_width=True,
+             column_config={"Measure": st.column_config.TextColumn(width="large")})
 if scn == BASE:
     st.info("The scenario equals the base case. Move the levers and press Run scenario to compare.")
 else:

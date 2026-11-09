@@ -102,10 +102,13 @@ async def main():
             frames = []
             for name, path in PAGES:
                 await cdp.call("Emulation.setDeviceMetricsOverride", width=WIDTH, height=4200, deviceScaleFactor=1, mobile=False)
+                t0 = time.time()
                 await cdp.call("Page.navigate", url=BASE + path)
                 h = await wait_idle(cdp)
+                ready = time.time() - t0 - 3  # wait_idle confirms idle over 3 extra seconds
+                errors = await cdp.js("document.querySelectorAll('[data-testid=stException]').length")
                 full = await shoot(cdp, h + 140, OUT / f"{name}.png")
-                print(name, full.size)
+                print(f"{name:32s} ready in about {ready:4.1f}s  errors={errors}  size={full.size}")
                 # walkthrough frames: top of page, then two further sections where the page is long
                 for y in [0, 900, 1800]:
                     if y == 0 or y + 600 < full.size[1]:

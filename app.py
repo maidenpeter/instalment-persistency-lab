@@ -6,49 +6,57 @@ from src import ui
 def home() -> None:
     ui.page(
         "Instalment Persistency Lab",
-        "Some health covers now start on the first instalment: the member pays a small deposit and the rest "
-        "monthly. That widens access. It also lets a member pay a little, claim early and stop paying. "
-        "This lab measures who lapses and when, what lapse costs in claims paid against premium actually "
-        "collected, and which product levers close the gap.",
+        "A member pays a 10% deposit, claims in the first few months, then stops paying. How often does that happen, "
+        "what does it cost in claims paid against premium actually collected, and which product changes stop it?",
     )
-
-    dec = ui.q("SELECT persistency FROM v_lapse_decrements WHERE duration = 10")
-    ctc = ui.q("SELECT persistency_group, claims_to_collected FROM v_claims_to_collected WHERE deposit_band = 'All'")
-    leak = ui.q("SELECT SUM(leakage_kes) AS leakage FROM v_leakage")
-    lapser = ctc.set_index("persistency_group").loc["Lapser", "claims_to_collected"]
-    stayer = ctc.set_index("persistency_group").loc["Stayer", "claims_to_collected"]
+    dec = ui.q(HOME_SQL["persistency"])
+    ctc = ui.q(HOME_SQL["claims_to_collected"])
+    leak = ui.q(HOME_SQL["leakage"])
+    allr = ctc[ctc["deposit_band"] == "All"].set_index("persistency_group")
+    lapser, stayer = allr.loc["Lapser", "claims_to_collected"], allr.loc["Stayer", "claims_to_collected"]
 
     c1, c2, c3 = st.columns(3)
-    ui.kpi(c1, "Still in force after 10 instalments", ui.pct(dec["persistency"].iloc[0]), "Kaplan-Meier style product of monthly decrements")
+    ui.kpi(c1, "Still in force after 10 instalments", ui.pct(dec["persistency"].iloc[0]), "Product of the monthly lapse decrements")
     ui.kpi(c2, "Claims paid per KES 1 collected, lapsers", f"KES {lapser:.2f}", f"Stayers: KES {stayer:.2f}")
-    ui.kpi(c3, "Claims paid in excess of premium on lapsed policies", ui.kes(leak["leakage"].iloc[0], short=True), "Run-off cohorts only")
+    ui.kpi(c3, "Claims in excess of premium, lapsed policies", ui.kes(leak["leakage"].iloc[0], short=True),
+           f"{int(leak['leaking'].iloc[0]):,} of {int(leak['lapsed'].iloc[0]):,} lapsed policies claimed more than they paid")
     st.write("")
-
-    st.subheader("How to read this lab")
-    pages = [
-        ("1. The Problem", "The product structure and why first-payment activation changes the risk."),
-        ("2. Persistency Explorer", "Lapse decrements by duration with exposure and confidence intervals, cohort heatmap, Kaplan-Meier curves."),
-        ("3. Anti-Selection and Leakage", "Claims against premium collected for stayers and lapsers, claim-then-lapse timing, leakage in KES."),
-        ("4. Early Warning Model", "Who is likely to miss the next instalment, how well the model ranks them, and a call list for this week."),
-        ("5. Product Levers Simulator", "Deposit, instalments, grace, waiting periods, benefit release and loading, simulated on the fitted models."),
-        ("6. Methods and Assumptions", "Data dictionary, every assumption, diagnostics, the R cross-check and an IFRS 17 discussion note."),
-    ]
-    cols = st.columns(2)
-    for i, (name, desc) in enumerate(pages):
-        cols[i % 2].markdown(f"**{name}**  \n{desc}")
-
-    st.write("")
-    st.markdown(
-        "Built with SQL (DuckDB) for every business metric, Python for data generation, survival models and "
-        "simulation, and R for an independent cross-check of the survival estimates. Use the sidebar to move between pages."
+    band = ctc[ctc["deposit_band"] != "All"]
+    ui.plot(ui.ctc_by_deposit_figure(band), 380)
+    low = band[(band["persistency_group"] == "Lapser") & (band["deposit_band"] == "10%")]["claims_to_collected"].iloc[0]
+    ui.takeaway(
+        f"Members who lapse after a 10% deposit were paid {ui.pct(low, 0)} of what they paid in. Members who stay sit near "
+        f"{ui.pct(stayer, 0)} whatever the deposit. The gap is the cost of cover that starts before the premium is in."
     )
-    ui.show_sql(
-        "SELECT persistency FROM v_lapse_decrements WHERE duration = 10;\n"
-        "SELECT persistency_group, claims_to_collected FROM v_claims_to_collected WHERE deposit_band = 'All';\n"
-        "SELECT SUM(leakage_kes) AS leakage FROM v_leakage;",
-        ["v_lapse_decrements", "v_claims_to_collected", "v_leakage"],
+    ui.show_sql(";\n\n".join(HOME_SQL.values()), ["v_lapse_decrements", "v_claims_to_collected", "v_leakage"])
+
+    st.subheader("Inside the lab")
+    cards = [
+        ("pages/1_The_Problem.py", "The Problem", "The product structure, and why first-payment activation changes the risk."),
+        ("pages/2_Persistency_Explorer.py", "Persistency Explorer", "Lapse decrements by duration with exposure and confidence intervals, cohort heatmap, Kaplan-Meier curves."),
+        ("pages/3_Anti_Selection_and_Leakage.py", "Anti-Selection and Leakage", "Claims against premium collected for stayers and lapsers, claim-then-lapse timing, leakage in KES."),
+        ("pages/4_Early_Warning_Model.py", "Early Warning Model", "Who will miss the next instalment, how well the model ranks them, and a call list for this week."),
+        ("pages/5_Product_Levers_Simulator.py", "Product Levers Simulator", "Deposit, instalments, grace, waiting periods, benefit release and loading, run on the fitted models."),
+        ("pages/6_Methods_and_Assumptions.py", "Methods and Assumptions", "Data dictionary, every assumption, model diagnostics, the R cross-check and an IFRS 17 note."),
+    ]
+    cols = st.columns(3)
+    for i, (path, name, desc) in enumerate(cards):
+        with cols[i % 3].container(border=True):
+            st.page_link(path, label=f"**{name}**")
+            st.caption(desc)
+    st.caption(
+        "SQL (DuckDB) computes every business metric, Python generates the data and fits the survival models and simulation, "
+        "and R cross-checks the survival estimates."
     )
     ui.footer()
+
+
+HOME_SQL = {
+    "persistency": "SELECT persistency FROM v_lapse_decrements WHERE duration = 10",
+    "claims_to_collected": "SELECT persistency_group, deposit_band, policies, collected_kes, claims_paid_kes, claims_to_collected\n"
+                           "FROM v_claims_to_collected ORDER BY persistency_group DESC, deposit_band",
+    "leakage": "SELECT SUM(leakage_kes) AS leakage, COUNT(*) AS lapsed, SUM(is_leaking::INT) AS leaking FROM v_leakage",
+}
 
 
 nav = st.navigation(

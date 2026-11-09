@@ -53,6 +53,12 @@ def km_table(df: pd.DataFrame, group: str | None = None) -> pd.DataFrame:
     return pd.concat(out, ignore_index=True)
 
 
+def km_python_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Kaplan-Meier overall and by income type, in the layout the R script writes."""
+    km = pd.concat([km_table(df, None), km_table(df, "income_type")], ignore_index=True)
+    return km[km["duration"] > 0][["group", "duration", "persistency", "lower_95", "upper_95"]].reset_index(drop=True)
+
+
 def cox_design(df: pd.DataFrame) -> pd.DataFrame:
     """Design matrix for the Cox model: dummies against reference levels, scaled numerics."""
     X = pd.DataFrame({"duration": df["duration"], "lapsed": df["lapsed"]})

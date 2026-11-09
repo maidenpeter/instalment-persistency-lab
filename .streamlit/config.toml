@@ -4,7 +4,11 @@ primaryColor = "#2a5d8f"
 backgroundColor = "#f9f9f7"
 secondaryBackgroundColor = "#eef0f2"
 textColor = "#1d2430"
-font = "sans serif"
+font = "IBM Plex Sans:https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+headingFont = "IBM Plex Sans:https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+codeFont = "IBM Plex Mono:https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap"
+baseRadius = "0.5rem"
+borderColor = "#e3e5e8"
 
 [server]
 headless = true

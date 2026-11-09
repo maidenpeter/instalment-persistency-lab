@@ -98,14 +98,14 @@ with tabs[2]:
 
 @st.cache_resource(show_spinner="Fitting the Cox model and testing proportional hazards...")
 def cox_fit():
-    return M.fit_cox(ui.q(M.SURVIVAL_SQL))
+    art = ui.artifacts()
+    return art["cox"] if art else M.fit_cox(ui.q(M.SURVIVAL_SQL))
 
 
 @st.cache_data(show_spinner=False)
 def km_python():
-    df = ui.q(M.SURVIVAL_SQL)
-    km = pd.concat([M.km_table(df, None), M.km_table(df, "income_type")], ignore_index=True)
-    return km[km["duration"] > 0][["group", "duration", "persistency", "lower_95", "upper_95"]].reset_index(drop=True)
+    art = ui.artifacts()
+    return art["km"] if art else M.km_python_table(ui.q(M.SURVIVAL_SQL))
 
 
 # ------------------------------------------------------------- survival diagnostics
@@ -190,6 +190,9 @@ with tabs[5]:
 
     @st.cache_resource(show_spinner="Running the simulator back-test...")
     def backtest():
+        art = ui.artifacts()
+        if art:
+            return art["backtest"]
         inp = SM.build_inputs(ui.q, cfg)
         return SM.simulate(inp, SM.Scenario(use_book_terms=True, grace_days=cfg["product"]["grace_days"], waiting=dict(cfg["waiting_months"])), n_runs=3)
 

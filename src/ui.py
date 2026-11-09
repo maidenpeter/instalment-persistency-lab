@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import streamlit as st
 
+from src import artifacts as A
 from src import db
 from src.generate import load_config
 
@@ -28,9 +29,12 @@ SEQ_SCALE = [[i / (len(SEQ_BLUE) - 1), c] for i, c in enumerate(SEQ_BLUE)]
 
 _CSS = """
 <style>
-  .block-container {padding-top: 2.2rem; padding-bottom: 3rem; max-width: 1180px;}
-  h1 {font-weight: 650; letter-spacing: -0.01em; font-size: 2.0rem;}
+  header[data-testid="stHeader"] {background: transparent; height: 2.5rem;}
+  .block-container {padding-top: 1.6rem; padding-bottom: 3rem; max-width: 1180px;}
+  h1 {font-weight: 600; letter-spacing: -0.015em; font-size: 2.1rem; padding-top: 0.2rem; padding-bottom: 0.3rem;}
   h2, h3 {font-weight: 600; letter-spacing: -0.005em;}
+  [data-testid="stMarkdownContainer"] h3 {padding-top: 1.4rem;}
+  [data-testid="stSidebarNav"] a span {font-size: 0.93rem;}
   .synthetic-banner {font-size: 0.82rem; color: #52514e; background: #eef0f2; border: 1px solid #dfe3e8;
       border-radius: 6px; padding: 0.35rem 0.75rem; display: inline-block; margin-bottom: 0.6rem;}
   .takeaway {color: #1d2430; font-size: 0.95rem; margin: -0.4rem 0 1.4rem 0; padding-left: 0.7rem;
@@ -49,7 +53,7 @@ _CSS = """
 def _register_template() -> None:
     t = go.layout.Template()
     t.layout = go.Layout(
-        font=dict(family="system-ui, -apple-system, Segoe UI, sans-serif", size=13, color=INK),
+        font=dict(family="IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif", size=13, color=INK),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor=SURFACE,
         colorway=SERIES,
@@ -87,6 +91,12 @@ def q(sql: str, params: tuple | None = None):
     """Run SQL against the DuckDB views and return a DataFrame (cached per query)."""
     con = _connection().cursor()
     return con.execute(sql, list(params) if params else None).df()
+
+
+@st.cache_resource(show_spinner=False)
+def artifacts() -> dict | None:
+    """Precomputed model results, or None if they do not match the current sources."""
+    return A.load()
 
 
 @st.cache_data(show_spinner=False)
@@ -129,6 +139,25 @@ def pct(x: float, dp: int = 1) -> str:
 def plot(fig, height: int = 380) -> None:
     fig.update_layout(height=height)
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
+
+def ctc_by_deposit_figure(band) -> go.Figure:
+    """Claims per KES collected, stayers against lapsers, by deposit band (rows from v_claims_to_collected)."""
+    fig = go.Figure()
+    for grp, color in [("Stayer", BLUE), ("Lapser", ORANGE)]:
+        d = band[band["persistency_group"] == grp]
+        fig.add_trace(go.Bar(x=d["deposit_band"], y=d["claims_to_collected"], name=f"{grp}s", marker_color=color,
+                             text=[pct(v, 0) for v in d["claims_to_collected"]], textposition="outside",
+                             customdata=d[["policies", "collected_kes", "claims_paid_kes"]],
+                             hovertemplate=f"{grp}s, deposit %{{x}}<br>Claims / collected %{{y:.1%}}<br>"
+                                           "Policies %{customdata[0]:,}<br>Collected KES %{customdata[1]:,.0f}<br>"
+                                           "Claims KES %{customdata[2]:,.0f}<extra></extra>"))
+    fig.add_hline(y=1.0, line=dict(color=MUTED, width=1, dash="dot"), annotation_text="Claims equal premium collected",
+                  annotation_position="top left", annotation_font_color=INK_2)
+    fig.update_layout(barmode="group", bargap=0.35, bargroupgap=0.08, title="Claims paid per KES of premium collected, by deposit size")
+    fig.update_yaxes(tickformat=".0%", title="Claims / premium collected", rangemode="tozero")
+    fig.update_xaxes(title="Deposit as share of annual premium", type="category")
+    return fig
 
 
 def footer() -> None:

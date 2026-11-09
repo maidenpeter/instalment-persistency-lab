@@ -16,7 +16,8 @@ cfg = ui.config()
 
 @st.cache_resource(show_spinner="Fitting the early warning models on earlier cohorts...")
 def early_warning():
-    return M.fit_early_warning(ui.q(M.FEATURES_SQL), cfg)
+    art = ui.artifacts()
+    return art["early_warning"] if art else M.fit_early_warning(ui.q(M.FEATURES_SQL), cfg)
 
 
 ew = early_warning()
@@ -143,15 +144,27 @@ ui.takeaway(
     f"Calling the top {n_calls} of {len(calls):,} members due this week covers {ui.pct(s['premium_at_risk_kes'] / calls['premium_at_risk_kes'].sum())} "
     "of the premium at risk. Retained premium is not profit: kept members keep claiming, so the margin line nets off expected claims and expenses."
 )
-show = top[["call_rank", "policy_id", "plan_tier", "income_type", "channel", "payment_method", "due_date", "amount_due_kes",
-            "outstanding_kes", "prev_outstanding", "p_miss_grace", "premium_at_risk_kes"]].copy()
+show = top[["call_rank", "policy_id", "p_miss_grace", "premium_at_risk_kes", "due_date", "amount_due_kes", "prev_outstanding",
+            "outstanding_kes", "plan_tier", "income_type", "channel", "payment_method"]].copy()
 show["prev_outstanding"] = np.where(show["prev_outstanding"] == 1, "Yes", "No")
-show.columns = ["Rank", "Policy", "Tier", "Income type", "Channel", "Pays by", "Next due", "Instalment (KES)",
-                "Premium still due (KES)", "Last instalment unpaid", "P(miss grace)", "Premium at risk (KES)"]
-st.dataframe(show.style.format({"Next due": lambda d: f"{pd.Timestamp(d):%d %b %Y}", "Instalment (KES)": "{:,.0f}",
-                                "Premium still due (KES)": "{:,.0f}", "P(miss grace)": "{:.1%}", "Premium at risk (KES)": "{:,.0f}"}),
-             hide_index=True, use_container_width=True, height=420)
-st.download_button("Download call list (CSV)", show.to_csv(index=False).encode("utf-8"), "call_list.csv", "text/csv")
+show.columns = ["Rank", "Policy", "P(miss grace)", "Premium at risk (KES)", "Next due", "Instalment (KES)", "Last instalment unpaid",
+                "Premium still due (KES)", "Tier", "Income type", "Channel", "Pays by"]
+show["P(miss grace)"] = 100 * show["P(miss grace)"]
+max_p = float(show["P(miss grace)"].max())
+st.dataframe(
+    show, hide_index=True, use_container_width=True, height=420,
+    column_config={
+        "Rank": st.column_config.NumberColumn(width="small"),
+        "Next due": st.column_config.DateColumn(format="D MMM YYYY"),
+        "Instalment (KES)": st.column_config.NumberColumn(format="localized"),
+        "Premium still due (KES)": st.column_config.NumberColumn(format="localized"),
+        "P(miss grace)": st.column_config.ProgressColumn(format="%.1f%%", min_value=0.0, max_value=max_p,
+                                                         help="Probability the next instalment is not paid within grace"),
+        "Premium at risk (KES)": st.column_config.NumberColumn(format="localized"),
+    },
+)
+st.download_button("Download call list (CSV)", show.rename(columns={"P(miss grace)": "P(miss grace) %"}).to_csv(index=False).encode("utf-8"),
+                   "call_list.csv", "text/csv")
 ui.show_sql(CALL_SQL + ";\n\n-- Probability a suspended instalment ends in lapse\n" + CURE_SQL + ";\n\n-- Totals for the chosen call volume\n" + SUM_SQL,
             ["v_call_candidates", "v_grace_cure_rate"])
 st.caption("Premium at risk = P(miss grace) x P(lapse | suspended) x premium still due. The retention uplift is an assumption "

@@ -307,3 +307,34 @@ def break_even_loading(inp: Inputs, scn: Scenario, n_runs: int = 1) -> float | N
 def signup_factor(deposit: float, base_deposit: float, elasticity: float) -> float:
     """Relative new business volume: (deposit / base deposit) ^ (-elasticity). An explicit assumption."""
     return float((deposit / base_deposit) ** (-elasticity))
+
+
+def base_scenario(cfg: dict) -> Scenario:
+    """Current product: the configured deposit and instalments, full cover from the first payment, no loading."""
+    s = cfg["simulator"]
+    return Scenario(deposit=s["base_deposit"], n_instalments=s["base_instalments"],
+                    grace_days=cfg["product"]["grace_days"], waiting=dict(cfg["waiting_months"]))
+
+
+def default_scenario(cfg: dict) -> Scenario:
+    """Example redesign the simulator page opens on: 20% deposit, benefits unlock with premium paid."""
+    return replace(base_scenario(cfg), deposit=0.20, release="proportional")
+
+
+def key(scn: Scenario) -> str:
+    import json
+    from dataclasses import asdict
+
+    return json.dumps(asdict(scn), sort_keys=True)
+
+
+DEPOSIT_GRID = [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40]
+
+
+def deposit_curve(inp: Inputs, scn: Scenario) -> pd.DataFrame:
+    """Margin and leakage per policy across deposit sizes, other levers held at the scenario."""
+    rows = []
+    for d in DEPOSIT_GRID:
+        o = simulate(inp, replace(scn, deposit=d), n_runs=1)
+        rows.append({"deposit": d, "margin_per_policy": o["margin_per_policy"], "leakage_per_policy": o["leakage_per_policy"]})
+    return pd.DataFrame(rows)

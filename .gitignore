@@ -7,3 +7,4 @@ data/*.duckdb.wal
 r/input/
 CLAUDE.md
 .claude/
+_readme_preview.html

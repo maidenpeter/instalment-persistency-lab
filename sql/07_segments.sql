@@ -9,7 +9,7 @@ WITH long AS (
     UNION ALL SELECT 'Deposit band', deposit_band, duration, exposed, lapsed FROM v_exposure_monthly
     UNION ALL SELECT 'Payment method', payment_method, duration, exposed, lapsed FROM v_exposure_monthly
 ), agg AS (
-    SELECT dimension, segment, duration, SUM(exposed) AS exposed, SUM(lapsed) AS lapses
+    SELECT dimension, segment, duration, CAST(SUM(exposed) AS DOUBLE) AS exposed, CAST(SUM(lapsed) AS DOUBLE) AS lapses
     FROM long GROUP BY ALL
 )
 SELECT

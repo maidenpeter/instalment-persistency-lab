@@ -4,11 +4,11 @@
 
 CREATE OR REPLACE VIEW v_lapse_decrements AS
 WITH d AS (
-    SELECT duration, SUM(exposed) AS exposed, SUM(lapsed) AS lapses
+    SELECT duration, CAST(SUM(exposed) AS DOUBLE) AS exposed, CAST(SUM(lapsed) AS DOUBLE) AS lapses
     FROM v_exposure_monthly
     GROUP BY duration
 ), q AS (
-    SELECT duration, exposed, lapses, lapses / exposed AS q, 1.96 AS z FROM d
+    SELECT duration, exposed, lapses, lapses / exposed AS q, CAST(1.96 AS DOUBLE) AS z FROM d
 )
 SELECT
     duration,

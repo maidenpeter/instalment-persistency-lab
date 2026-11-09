@@ -5,7 +5,7 @@
 
 CREATE OR REPLACE VIEW v_cohort_persistency AS
 WITH c AS (
-    SELECT inception_month, duration, SUM(exposed) AS exposed, SUM(lapsed) AS lapses
+    SELECT inception_month, duration, CAST(SUM(exposed) AS DOUBLE) AS exposed, CAST(SUM(lapsed) AS DOUBLE) AS lapses
     FROM v_exposure_monthly
     GROUP BY inception_month, duration
 ), sizes AS (

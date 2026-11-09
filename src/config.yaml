@@ -1,0 +1,130 @@
+# Instalment Persistency Lab: every assumption lives here.
+# Values are illustrative parameters for a synthetic book, not quotes or market results.
+# Each line carries a one-line comment; the Methods page reads these comments.
+
+seed: 20261116  # random seed, so the synthetic book is identical on every build
+
+book:
+  n_policies: 20000  # policies written over the whole inception window
+  first_inception: "2024-01-01"  # first inception month
+  n_inception_months: 24  # inception window length in months
+  monthly_growth: 0.025  # month-on-month growth in new business volume
+  valuation_date: "2026-03-31"  # experience is observed up to this date
+  runoff_days: 60  # days after cover ends before a policy counts as fully run off
+
+product:
+  cover_months: 12  # annual cover term
+  grace_days: 15  # unpaid beyond this many days after the due date: cover suspended
+  reinstatement_days: 30  # still unpaid this many days after suspension: policy lapsed
+  deposit_options: [0.10, 0.15, 0.20, 0.25, 0.30, 0.40]  # deposit as share of annual premium
+  deposit_weights: [0.38, 0.20, 0.17, 0.10, 0.08, 0.07]  # take-up of each deposit option; small deposits sell most
+  instalment_options: [6, 8, 10]  # number of monthly instalments after the deposit
+  instalment_weights: [0.15, 0.20, 0.65]  # take-up of each instalment option
+  expense_ratio: 0.25  # acquisition, admin and collection cost as share of premium collected
+
+tier_mix_by_income:  # plan tier take-up depends on income type
+  salaried: {Starter: 0.40, Mid: 0.38, Comprehensive: 0.22}  # salaried members buy richer plans
+  variable/informal: {Starter: 0.62, Mid: 0.30, Comprehensive: 0.08}  # informal earners mostly buy Starter
+  SME group: {Starter: 0.48, Mid: 0.37, Comprehensive: 0.15}  # SME groups sit in between
+
+tiers:  # illustrative annual prices and limits per plan, KES
+  Starter:
+    principal_rate: 12000  # annual premium for the principal member, KES
+    dependant_rate: 6500  # annual premium per dependant, KES
+    severity_scale: 0.70  # claim size relative to Mid, reflects provider panel and limits
+    limits: {outpatient: 25000, inpatient: 250000, maternity: 40000, chronic: 0}  # annual benefit limits per policy, KES
+  Mid:
+    principal_rate: 22000  # annual premium for the principal member, KES
+    dependant_rate: 12000  # annual premium per dependant, KES
+    severity_scale: 1.00  # claim size relative to Mid
+    limits: {outpatient: 60000, inpatient: 600000, maternity: 80000, chronic: 60000}  # annual benefit limits per policy, KES
+  Comprehensive:
+    principal_rate: 42000  # annual premium for the principal member, KES
+    dependant_rate: 23000  # annual premium per dependant, KES
+    severity_scale: 1.60  # claim size relative to Mid
+    limits: {outpatient: 120000, inpatient: 1500000, maternity: 150000, chronic: 150000}  # annual benefit limits per policy, KES
+
+age_premium_factor:  # premium multiplier by principal age band
+  "18-29": 0.85  # younger principals
+  "30-39": 1.00  # reference band
+  "40-49": 1.25  # middle age
+  "50-65": 1.65  # older principals
+
+portfolio_mix:
+  channel: {online: 0.30, USSD: 0.30, agent: 0.40}  # sales channel shares
+  income_type: {salaried: 0.40, variable/informal: 0.45, SME group: 0.15}  # income type shares
+  region: {Nairobi: 0.32, Central: 0.14, Coast: 0.12, Rift Valley: 0.16, Western: 0.09, Nyanza: 0.10, Eastern: 0.07}  # region shares
+  family_size: {1: 0.30, 2: 0.18, 3: 0.17, 4: 0.17, 5: 0.11, 6: 0.07}  # members covered per policy
+  age_mean: 36  # mean principal age
+  age_sd: 10  # spread of principal age, truncated to 18 to 65
+
+payment_method_by_income:  # payment method mix depends on income type
+  salaried: {M-Pesa STK: 0.50, paybill: 0.25, bank: 0.25}  # salaried members use bank standing orders more
+  variable/informal: {M-Pesa STK: 0.62, paybill: 0.36, bank: 0.02}  # informal earners mostly use mobile money
+  SME group: {M-Pesa STK: 0.45, paybill: 0.35, bank: 0.20}  # SME groups pay a mix
+
+income_proxy_kes:  # monthly income proxy by income type (KES), used for affordability; Nairobi uplift below
+  salaried: 65000  # salaried proxy
+  variable/informal: 28000  # informal earner proxy
+  SME group: 45000  # SME group member proxy
+nairobi_income_uplift: 1.30  # Nairobi incomes relative to other regions
+income_noise_sd: 0.35  # true income varies around the proxy (lognormal sd); the insurer only sees the proxy
+
+missed_payment:  # monthly hazard of missing an instalment due date, logistic scale
+  base_log_odds: -2.30  # baseline for a salaried, online, M-Pesa STK member at instalment 1
+  income_type: {salaried: 0.0, variable/informal: 0.55, SME group: 0.25}  # irregular income misses more
+  channel: {online: 0.0, USSD: 0.20, agent: -0.15}  # agent relationship helps a little
+  payment_method: {M-Pesa STK: 0.0, paybill: 0.30, bank: -0.45}  # push prompts and standing orders help
+  affordability_per_10pct: 0.30  # log odds per 10 points of instalment-to-income ratio
+  age_per_10y: -0.10  # older principals miss slightly less
+  prior_late_each: 0.22  # log odds per earlier late instalment (capped at 3)
+  duration_slope: -0.06  # log odds per instalment number; risk falls as the habit forms
+  january: 0.45  # school fees month
+  december: 0.30  # festive spending month
+  after_large_claim: 0.95  # next instalment after a large claim is settled
+  buy_to_claim_after_m3: 2.20  # buy-to-claim members stop paying once early claims are made
+
+cure:  # once a due date is missed, days until payment (if ever)
+  ever_pay_base: 0.62  # share of missed instalments that are eventually paid
+  ever_pay_after_large_claim: 0.35  # far fewer pay after a large claim settles
+  ever_pay_buy_to_claim: 0.25  # buy-to-claim members rarely come back
+  ever_pay_salaried_uplift: 0.08  # salaried members more likely to come back
+  days_weibull_shape: 1.10  # shape of time-to-pay among those who pay
+  days_weibull_scale: 12.0  # scale (days) of time-to-pay among those who pay
+
+anti_selection:
+  buy_to_claim_base: 0.030  # share of buy-to-claim members at a 40% deposit
+  buy_to_claim_per_10pct_lower_deposit: 0.040  # extra share per 10 points lower deposit (15% at a 10% deposit)
+  early_claim_multiplier: 8.0  # claim frequency multiplier in months 1 to 3 for buy-to-claim members
+  early_months: 3  # months over which buy-to-claim members front-load claims
+  large_claim_kes: 40000  # a settled claim at or above this is a large claim
+  large_claim_window_days: 60  # a large claim settled this many days before a due date raises the miss hazard
+
+waiting_months:  # months from inception before each benefit can be claimed
+  outpatient: 0  # outpatient available from the first payment
+  inpatient: 1  # 30-day general waiting period
+  maternity: 10  # maternity waiting period
+  chronic: 3  # chronic and pre-existing conditions
+
+claims:  # frequency per member per month and severity (Mid tier, age 30-39)
+  outpatient: {freq: 0.125, median_kes: 2600, sigma: 0.75}  # lognormal severity
+  inpatient: {freq: 0.0070, median_kes: 38000, sigma: 1.05}  # heavy tailed lognormal severity
+  maternity: {freq: 0.0110, median_kes: 45000, sigma: 0.45}  # per eligible principal-month
+  chronic: {freq: 0.040, median_kes: 4500, sigma: 0.60}  # per member-month for members aged 40 and over
+  age_freq_per_10y: 0.15  # log frequency per 10 years of principal age above 35
+  family_child_freq: 1.15  # dependants claim outpatient more often than adults
+  paid_lag_days_median: {outpatient: 10, inpatient: 24, maternity: 20, chronic: 12}  # service to payment lag
+  maternity_age_range: [20, 42]  # principals in this age range with family size of 2 or more are eligible
+
+model:
+  train_cutoff_inception: "2025-03-01"  # early warning model trains on cohorts incepted before this date
+  snapshot_days_before_due: 7  # features are taken this many days before each due date
+  call_horizon_days: 14  # call list covers instalments due within this many days after valuation
+  gbm_keep_threshold_auc: 0.01  # keep the gradient boosting model only if it beats logistic regression by this much AUC
+
+simulator:
+  sample_size: 6000  # policies sampled from the run-off book for each scenario run
+  n_runs: 2  # repeated runs averaged per scenario
+  base_deposit: 0.10  # base case deposit share
+  base_instalments: 10  # base case number of instalments
+  default_signup_elasticity: 0.35  # sign-up elasticity to deposit size (assumption, editable on the page)

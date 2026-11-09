@@ -68,7 +68,7 @@ _register_template()
 
 
 def page(title: str, subtitle: str | None = None) -> None:
-    st.set_page_config(page_title=f"{title} | Instalment Persistency Lab", layout="wide", initial_sidebar_state="expanded")
+    st.set_page_config(page_title=f"{title} | Instalment Persistency Lab", layout="wide", initial_sidebar_state="auto")
     st.markdown(_CSS, unsafe_allow_html=True)
     st.markdown(f'<div class="synthetic-banner">{SYNTHETIC_LABEL}</div>', unsafe_allow_html=True)
     st.title(title)

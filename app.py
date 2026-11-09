@@ -57,6 +57,9 @@ nav = st.navigation(
         st.Page("pages/1_The_Problem.py", title="The Problem", url_path="the-problem"),
         st.Page("pages/2_Persistency_Explorer.py", title="Persistency Explorer", url_path="persistency-explorer"),
         st.Page("pages/3_Anti_Selection_and_Leakage.py", title="Anti-Selection and Leakage", url_path="anti-selection-and-leakage"),
+        st.Page("pages/4_Early_Warning_Model.py", title="Early Warning Model", url_path="early-warning-model"),
+        st.Page("pages/5_Product_Levers_Simulator.py", title="Product Levers Simulator", url_path="product-levers-simulator"),
+        st.Page("pages/6_Methods_and_Assumptions.py", title="Methods and Assumptions", url_path="methods-and-assumptions"),
     ]
 )
 nav.run()

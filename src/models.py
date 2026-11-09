@@ -5,6 +5,7 @@ Run `python -m src.models export` to write the CSV used by the R cross-check.
 """
 from __future__ import annotations
 
+import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -212,12 +213,12 @@ def score(ew: EarlyWarning, df: pd.DataFrame) -> np.ndarray:
 MISS_SQL = """
 SELECT instalment_no, deposit_pct, n_instalments, affordability_ratio, principal_age, due_month,
        income_type, channel, payment_method, LEAST(prior_late_count, 3) AS prior_late_count,
-       large_claim_recent, missed_due
+       large_claim_recent, ln(1 + claims_kes_to_snapshot) AS log_claims_kes, missed_due
 FROM v_model_features
 WHERE missed_due IS NOT NULL
 """
 MISS_NUMERIC = ["instalment_no", "deposit_pct", "n_instalments", "affordability_ratio", "principal_age",
-                "prior_late_count", "large_claim_recent", "is_january", "is_december"]
+                "prior_late_count", "large_claim_recent", "log_claims_kes", "is_january", "is_december"]
 MISS_CATEGORICAL = ["income_type", "channel", "payment_method"]
 
 
@@ -307,25 +308,31 @@ def fit_cure(df: pd.DataFrame, window: int) -> CureCurve:
 
 # ---------------------------------------------------------------- export for R
 
+def r_name(term: str) -> str:
+    """Syntactic column name shared by the Python export and the R script."""
+    return re.sub(r"[^0-9a-zA-Z]+", "_", term).strip("_")
+
+
 def export_for_r(con) -> Path:
     out = R_DIR / "input"
     out.mkdir(parents=True, exist_ok=True)
     df = con.execute(SURVIVAL_SQL).df()
     X = cox_design(df)
+    X.columns = [r_name(c) for c in X.columns]
     X.insert(0, "income_type", df["income_type"].to_numpy())
     X.to_csv(out / "survival_data.csv", index=False)
     return out / "survival_data.csv"
 
 
-def python_reference_outputs(con) -> tuple[pd.DataFrame, pd.DataFrame]:
+def python_reference_outputs(con, cox: CoxResult | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
     """KM and Cox estimates in the same layout the R script writes."""
     df = con.execute(SURVIVAL_SQL).df()
-    km = km_table(df, None)
-    km_g = km_table(df, "income_type")
-    km = pd.concat([km, km_g], ignore_index=True)
+    km = pd.concat([km_table(df, None), km_table(df, "income_type")], ignore_index=True)
     km = km[km["duration"] > 0][["group", "duration", "persistency", "lower_95", "upper_95"]]
-    cox = fit_cox(df).summary.reset_index().rename(columns={"covariate": "term"})
-    return km, cox
+    cox = cox or fit_cox(df)
+    c = cox.summary.reset_index().rename(columns={"covariate": "term"})
+    c["term"] = c["term"].map(r_name)
+    return km.reset_index(drop=True), c
 
 
 if __name__ == "__main__":

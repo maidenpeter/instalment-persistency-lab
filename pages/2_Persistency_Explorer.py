@@ -42,8 +42,8 @@ st.write("")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=dec["duration"], y=dec["q_upper_95"], mode="lines", line=dict(width=0), showlegend=False, hoverinfo="skip"))
 fig.add_trace(go.Scatter(x=dec["duration"], y=dec["q_lower_95"], mode="lines", line=dict(width=0), fill="tonexty",
-                         fillcolor="rgba(42,120,214,0.15)", name="95% CI", hoverinfo="skip"))
-fig.add_trace(go.Scatter(x=dec["duration"], y=dec["q"], mode="lines+markers", name="Crude q(t)", line=dict(color=ui.BLUE, width=2),
+                         fillcolor=ui.rgba(ui.PRIMARY, 0.15), name="95% CI", hoverinfo="skip"))
+fig.add_trace(go.Scatter(x=dec["duration"], y=dec["q"], mode="lines+markers", name="Crude q(t)", line=dict(color=ui.PRIMARY, width=2),
                          marker=dict(size=8), customdata=dec[["exposed", "lapses"]],
                          hovertemplate="Instalment %{x}<br>q = %{y:.1%}<br>Exposed %{customdata[0]:,.0f}, lapses %{customdata[1]:,.0f}<extra></extra>"))
 fig.update_yaxes(tickformat=".0%", title="Monthly lapse rate q(t)", rangemode="tozero")
@@ -71,7 +71,7 @@ with tabs[0]:
     })
     peak = int(worst["duration"])
     st.dataframe(
-        tbl.style.apply(lambda r: ["background-color: #fdf0ea" if r["Duration t"] == peak else "" for _ in r], axis=1),
+        tbl.style.apply(lambda r: [f"background-color: {ui.HIGHLIGHT_ROW}" if r["Duration t"] == peak else "" for _ in r], axis=1),
         hide_index=True, use_container_width=True,
         column_config={
             "Duration t": st.column_config.NumberColumn(help="The t-th monthly instalment after the deposit"),

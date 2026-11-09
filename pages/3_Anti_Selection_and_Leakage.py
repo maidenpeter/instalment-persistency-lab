@@ -54,9 +54,9 @@ with tabs[0]:
     """
     dur = ui.q(DUR_SQL)
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=dur["lapse_duration"], y=dur["avg_collected_kes"], name="Premium collected per policy", marker_color=ui.BLUE,
+    fig.add_trace(go.Bar(x=dur["lapse_duration"], y=dur["avg_collected_kes"], name="Premium collected per policy", marker_color=ui.PRIMARY,
                          hovertemplate="Lapsed at instalment %{x}<br>Collected KES %{y:,.0f}<extra></extra>"))
-    fig.add_trace(go.Bar(x=dur["lapse_duration"], y=dur["avg_claims_kes"], name="Claims paid per policy", marker_color=ui.ORANGE,
+    fig.add_trace(go.Bar(x=dur["lapse_duration"], y=dur["avg_claims_kes"], name="Claims paid per policy", marker_color=ui.ACCENT,
                          hovertemplate="Lapsed at instalment %{x}<br>Claims KES %{y:,.0f}<extra></extra>"))
     fig.update_layout(barmode="group", bargap=0.3, bargroupgap=0.08)
     fig.update_yaxes(title="KES per lapsed policy", tickformat=",.0f")
@@ -75,7 +75,7 @@ with tabs[1]:
     nxt = ui.q(NEXT_SQL).set_index("claim_history")
     with left:
         fig = go.Figure()
-        for metric, name, color in [("missed_due_date_rate", "Missed the due date", ui.BLUE), ("lapse_rate", "Lapsed on that instalment", ui.ORANGE)]:
+        for metric, name, color in [("missed_due_date_rate", "Missed the due date", ui.PRIMARY), ("lapse_rate", "Lapsed on that instalment", ui.ACCENT)]:
             fig.add_trace(go.Bar(x=nxt.index, y=nxt[metric], name=name, marker_color=color, text=[ui.pct(v) for v in nxt[metric]],
                                  textposition="outside", hovertemplate="%{x}<br>" + name + ": %{y:.1%}<extra></extra>"))
         fig.update_layout(barmode="group", bargap=0.35, bargroupgap=0.08, title="The next instalment after a large claim")
@@ -95,7 +95,7 @@ with tabs[1]:
     tim = ui.q(TIMING_SQL)
     with right:
         fig = go.Figure(go.Histogram(x=tim["days_claim_to_lapse"], xbins=dict(start=0, end=tim["days_claim_to_lapse"].max() + 15, size=15),
-                                     marker=dict(color=ui.ORANGE, line=dict(color=ui.SURFACE, width=2)),
+                                     marker=dict(color=ui.ACCENT, line=dict(color=ui.SURFACE, width=2)),
                                      hovertemplate="%{x} days<br>%{y} policies<extra></extra>"))
         fig.update_layout(title="Days from last large claim payment to lapse", bargap=0.05)
         fig.update_xaxes(title="Days")
@@ -112,9 +112,9 @@ with tabs[2]:
     EARLY_SQL = "SELECT deposit_band, early_freq_per_unit, later_freq_per_unit FROM v_early_claims_by_deposit"
     early = ui.q(EARLY_SQL)
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=early["deposit_band"], y=early["early_freq_per_unit"], name="Cover months 1 to 3", marker_color=ui.ORANGE,
+    fig.add_trace(go.Bar(x=early["deposit_band"], y=early["early_freq_per_unit"], name="Cover months 1 to 3", marker_color=ui.ACCENT,
                          hovertemplate="Deposit %{x}<br>%{y:.3f} claims per member-month<extra></extra>"))
-    fig.add_trace(go.Bar(x=early["deposit_band"], y=early["later_freq_per_unit"], name="Cover months 4 to 10", marker_color=ui.BLUE,
+    fig.add_trace(go.Bar(x=early["deposit_band"], y=early["later_freq_per_unit"], name="Cover months 4 to 10", marker_color=ui.PRIMARY,
                          hovertemplate="Deposit %{x}<br>%{y:.3f} claims per member-month<extra></extra>"))
     fig.update_layout(barmode="group", bargap=0.35, bargroupgap=0.08, title="Outpatient and inpatient claim frequency per member-month")
     fig.update_yaxes(title="Claims per member-month", rangemode="tozero")
@@ -145,7 +145,7 @@ with tabs[3]:
     seg = ui.q(SEG_SQL)
     total_leak = seg["leakage_kes"].sum()
     fig = go.Figure(go.Bar(
-        y=seg["segment"], x=seg["leakage_share_of_written"], orientation="h", marker_color=ui.ORANGE,
+        y=seg["segment"], x=seg["leakage_share_of_written"], orientation="h", marker_color=ui.ACCENT,
         text=[f"{ui.pct(v)}  ({ui.kes(k, short=True)})" for v, k in zip(seg["leakage_share_of_written"], seg["leakage_kes"])],
         textposition="outside", customdata=seg[["leakage_kes", "lapsed_policies", "share_leaking"]],
         hovertemplate="%{y}<br>Leakage %{x:.1%} of written premium<br>KES %{customdata[0]:,.0f}<br>"

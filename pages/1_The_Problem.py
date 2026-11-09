@@ -30,9 +30,9 @@ with right:
     paid = np.minimum(0.10 + 0.09 * months, 1.0)
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=months, y=np.ones_like(months, dtype=float), name="Annual benefit limit available",
-                             mode="lines", line=dict(color=ui.ORANGE, width=2), hovertemplate="Month %{x}: 100% of limit<extra></extra>"))
+                             mode="lines", line=dict(color=ui.ACCENT, width=2), hovertemplate="Month %{x}: 100% of limit<extra></extra>"))
     fig.add_trace(go.Scatter(x=months, y=paid, name="Premium paid so far (10% deposit, 10 instalments)", mode="lines+markers",
-                             line=dict(color=ui.BLUE, width=2, shape="hv"), marker=dict(size=8),
+                             line=dict(color=ui.PRIMARY, width=2, shape="hv"), marker=dict(size=8),
                              hovertemplate="Month %{x}: %{y:.0%} of premium paid<extra></extra>"))
     fig.update_yaxes(tickformat=".0%", range=[0, 1.08], title="Share of annual amount")
     fig.update_xaxes(title="Policy month", dtick=1)

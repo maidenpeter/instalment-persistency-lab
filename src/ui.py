@@ -11,41 +11,63 @@ from src.generate import load_config
 
 SYNTHETIC_LABEL = "Synthetic portfolio. Illustrative only."
 
-# Neutral palette (validated categorical order, not any insurer's colours).
-INK = "#1d2430"
-INK_2 = "#52514e"
-MUTED = "#898781"
-GRID = "#e1e0d9"
-AXIS = "#c3c2b7"
-SURFACE = "#fcfcfb"
-BLUE = "#2a78d6"  # stayers, base case, observed
-ORANGE = "#eb6834"  # lapsers, scenario, risk
-AQUA = "#1baf7a"
-YELLOW = "#eda100"
-VIOLET = "#6250d6"
-SERIES = [BLUE, ORANGE, AQUA, YELLOW, "#e87ba4", "#008300", VIOLET, "#e34948"]
-SEQ_BLUE = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
-SEQ_SCALE = [[i / (len(SEQ_BLUE) - 1), c] for i, c in enumerate(SEQ_BLUE)]
+# Pink and lavender palette. Categorical order validated for colour-blind separation and contrast.
+INK = "#3d1f35"
+INK_2 = "#6d4560"
+MUTED = "#a07a92"
+GRID = "#f6dce8"
+AXIS = "#e9bfd3"
+SURFACE = "#fffafc"
+PRIMARY = "#7357d6"  # violet: stayers, base case, observed
+ACCENT = "#e0457b"  # rose: lapsers, scenario, risk
+APRICOT = "#d97a1e"
+TEAL = "#00998a"
+ORCHID = "#b44fc0"
+SERIES = [PRIMARY, ACCENT, APRICOT, TEAL, ORCHID]
+SEQ_PINK = ["#fde7f0", "#f9c4da", "#f29abd", "#e46a9c", "#c94882", "#9c2f63", "#6b1f45"]
+SEQ_SCALE = [[i / (len(SEQ_PINK) - 1), c] for i, c in enumerate(SEQ_PINK)]
+HIGHLIGHT_ROW = "#fde7f0"
+
+
+def rgba(hex_color: str, alpha: float) -> str:
+    h = hex_color.lstrip("#")
+    return f"rgba({int(h[0:2], 16)},{int(h[2:4], 16)},{int(h[4:6], 16)},{alpha})"
+
 
 _CSS = """
 <style>
+  .stApp {background: linear-gradient(180deg, #fff8fb 0%, #fff3f8 55%, #f8f1ff 100%);}
   header[data-testid="stHeader"] {background: transparent; height: 2.5rem;}
   .block-container {padding-top: 1.6rem; padding-bottom: 3rem; max-width: 1180px;}
-  h1 {font-weight: 600; letter-spacing: -0.015em; font-size: 2.1rem; padding-top: 0.2rem; padding-bottom: 0.3rem;}
-  h2, h3 {font-weight: 600; letter-spacing: -0.005em;}
+  h1 {font-weight: 700; letter-spacing: -0.01em; font-size: 2.5rem; padding-top: 0.2rem; padding-bottom: 0.35rem;
+      background: linear-gradient(90deg, #9c2f63 0%, #c2457f 45%, #6b3fa0 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent !important;}
+  h2, h3 {font-weight: 600; color: #7a2d5a;}
   [data-testid="stMarkdownContainer"] h3 {padding-top: 1.4rem;}
-  [data-testid="stSidebarNav"] a span {font-size: 0.93rem;}
-  .synthetic-banner {font-size: 0.82rem; color: #52514e; background: #eef0f2; border: 1px solid #dfe3e8;
-      border-radius: 6px; padding: 0.35rem 0.75rem; display: inline-block; margin-bottom: 0.6rem;}
-  .takeaway {color: #1d2430; font-size: 0.95rem; margin: -0.4rem 0 1.4rem 0; padding-left: 0.7rem;
-      border-left: 3px solid #c3c2b7;}
-  .kpi {background: #ffffff; border: 1px solid #e3e5e8; border-radius: 8px; padding: 1rem 1.1rem; height: 100%;}
-  .kpi .label {color: #52514e; font-size: 0.85rem; margin-bottom: 0.25rem;}
-  .kpi .value {color: #1d2430; font-size: 1.75rem; font-weight: 650; line-height: 1.15; white-space: nowrap;}
-  .kpi .note {color: #6b6a66; font-size: 0.8rem; margin-top: 0.35rem;}
-  .lede {font-size: 1.05rem; color: #2b3340; line-height: 1.55; max-width: 60rem;}
+  [data-testid="stSidebar"] {background: linear-gradient(180deg, #fde6f0 0%, #f6e4fb 100%);}
+  [data-testid="stSidebarNav"] a span {font-size: 0.95rem;}
+  [data-testid="stSidebarNav"] a[aria-current="page"] {background: #ffffffb3; border-radius: 999px;}
+  .sidebar-brand {font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; font-weight: 700; color: #9c2f63;}
+  .sidebar-note {font-size: 0.82rem; color: #6d4560;}
+  .synthetic-banner {font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700;
+      color: #b8336a; background: #ffffffcc; border: 1px solid #f3a9c7; border-radius: 999px;
+      padding: 0.32rem 0.95rem; display: inline-block; margin-bottom: 0.5rem;}
+  .synthetic-banner::before {content: "\\2726"; color: #ec6fa0; margin-right: 0.45rem; letter-spacing: 0;}
+  .takeaway {color: #3d1f35; font-size: 0.97rem; margin: -0.3rem 0 1.4rem 0; padding: 0.6rem 0.9rem;
+      border-left: 4px solid #ec6fa0; background: #fff0f6cc; border-radius: 0 12px 12px 0;}
+  .kpi {background: #ffffff; border: 1px solid #f6cfe0; border-radius: 18px; padding: 1.05rem 1.2rem; height: 100%;
+      box-shadow: 0 8px 22px rgba(194, 84, 127, 0.10);}
+  .kpi .label {color: #6d4560; font-size: 0.86rem; margin-bottom: 0.2rem; font-weight: 600;}
+  .kpi .value {font-family: 'Playfair Display', Georgia, serif; color: #9c2f63; font-size: 2rem; font-weight: 700;
+      line-height: 1.15; white-space: nowrap;}
+  .kpi .note {color: #8a6a80; font-size: 0.8rem; margin-top: 0.35rem;}
+  .lede {font-size: 1.07rem; color: #5b2a48; line-height: 1.6; max-width: 62rem;}
+  [data-testid="stExpander"] details {background: #ffffffb3; border-radius: 14px;}
+  [data-testid="stVerticalBlockBorderWrapper"] {background: #ffffffb3;}
+  .stButton button, .stFormSubmitButton button, .stDownloadButton button {border-radius: 999px; padding-left: 1.2rem; padding-right: 1.2rem;}
+  [data-baseweb="tab-list"] button[aria-selected="true"] p {color: #b8336a; font-weight: 700;}
   [data-testid="stMetricValue"] {font-size: 1.6rem;}
-  @media (max-width: 640px) { .kpi .value {font-size: 1.5rem;} h1 {font-size: 1.6rem;} }
+  @media (max-width: 640px) { .kpi .value {font-size: 1.6rem;} h1 {font-size: 1.9rem;} }
 </style>
 """
 
@@ -53,7 +75,7 @@ _CSS = """
 def _register_template() -> None:
     t = go.layout.Template()
     t.layout = go.Layout(
-        font=dict(family="IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif", size=13, color=INK),
+        font=dict(family="Nunito Sans, system-ui, -apple-system, Segoe UI, sans-serif", size=13, color=INK),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor=SURFACE,
         colorway=SERIES,
@@ -61,8 +83,8 @@ def _register_template() -> None:
         xaxis=dict(gridcolor=GRID, linecolor=AXIS, zeroline=False, ticks="", title_font=dict(color=INK_2, size=12)),
         yaxis=dict(gridcolor=GRID, linecolor=AXIS, zeroline=False, ticks="", title_font=dict(color=INK_2, size=12)),
         legend=dict(orientation="h", yanchor="bottom", y=1.01, x=0, title_text="", font=dict(size=12)),
-        hoverlabel=dict(bgcolor="white", font_size=12, bordercolor=AXIS),
-        title=dict(font=dict(size=14, color=INK), x=0, xanchor="left", y=0.985, yanchor="top", yref="container"),
+        hoverlabel=dict(bgcolor="white", font_size=12, bordercolor=ACCENT),
+        title=dict(font=dict(size=15, color="#7a2d5a", family="Playfair Display, Georgia, serif"), x=0, xanchor="left", y=0.985, yanchor="top", yref="container"),
     )
     pio.templates["lab"] = t
     pio.templates.default = "lab"
@@ -144,7 +166,7 @@ def plot(fig, height: int = 380) -> None:
 def ctc_by_deposit_figure(band) -> go.Figure:
     """Claims per KES collected, stayers against lapsers, by deposit band (rows from v_claims_to_collected)."""
     fig = go.Figure()
-    for grp, color in [("Stayer", BLUE), ("Lapser", ORANGE)]:
+    for grp, color in [("Stayer", PRIMARY), ("Lapser", ACCENT)]:
         d = band[band["persistency_group"] == grp]
         fig.add_trace(go.Bar(x=d["deposit_band"], y=d["claims_to_collected"], name=f"{grp}s", marker_color=color,
                              text=[pct(v, 0) for v in d["claims_to_collected"]], textposition="outside",

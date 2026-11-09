@@ -147,9 +147,9 @@ left, right = st.columns(2)
 with left:
     t = np.arange(1, 11)
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=t, y=b["persistency"], name="Base case", mode="lines+markers", line=dict(color=ui.BLUE, width=2), marker=dict(size=8),
+    fig.add_trace(go.Scatter(x=t, y=b["persistency"], name="Base case", mode="lines+markers", line=dict(color=ui.PRIMARY, width=2), marker=dict(size=8),
                              hovertemplate="Base, instalment %{x}: %{y:.1%}<extra></extra>"))
-    fig.add_trace(go.Scatter(x=t, y=s["persistency"], name="Scenario", mode="lines+markers", line=dict(color=ui.ORANGE, width=2), marker=dict(size=8),
+    fig.add_trace(go.Scatter(x=t, y=s["persistency"], name="Scenario", mode="lines+markers", line=dict(color=ui.ACCENT, width=2), marker=dict(size=8),
                              hovertemplate="Scenario, instalment %{x}: %{y:.1%}<extra></extra>"))
     fig.update_yaxes(tickformat=".0%", title="Share still in force", range=[0, 1.02])
     fig.update_xaxes(title="Policy month (instalment number)", dtick=1)
@@ -161,8 +161,8 @@ with right:
     vals_b = [b["collected_per_policy"], b["claims_per_policy"], inp.expense_ratio * b["collected_per_policy"], b["margin_per_policy"]]
     vals_s = [s["collected_per_policy"], s["claims_per_policy"], inp.expense_ratio * s["collected_per_policy"], s["margin_per_policy"]]
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=cats, y=vals_b, name="Base case", marker_color=ui.BLUE, hovertemplate="Base, %{x}: KES %{y:,.0f}<extra></extra>"))
-    fig.add_trace(go.Bar(x=cats, y=vals_s, name="Scenario", marker_color=ui.ORANGE, hovertemplate="Scenario, %{x}: KES %{y:,.0f}<extra></extra>"))
+    fig.add_trace(go.Bar(x=cats, y=vals_b, name="Base case", marker_color=ui.PRIMARY, hovertemplate="Base, %{x}: KES %{y:,.0f}<extra></extra>"))
+    fig.add_trace(go.Bar(x=cats, y=vals_s, name="Scenario", marker_color=ui.ACCENT, hovertemplate="Scenario, %{x}: KES %{y:,.0f}<extra></extra>"))
     fig.update_layout(barmode="group", bargap=0.3, bargroupgap=0.08, title="Per policy written, KES")
     fig.update_yaxes(tickformat=",.0f", title="KES per policy")
     ui.plot(fig, 360)
@@ -175,7 +175,7 @@ with st.spinner("Tracing the deposit curve..."):
 dc["signups"] = [SM.signup_factor(d, BASE.deposit, elasticity) for d in dc["deposit"]]
 dc["book_margin"] = nb * dc["signups"] * dc["margin_per_policy"]
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=dc["deposit"], y=dc["book_margin"], mode="lines+markers", name="Annual book margin", line=dict(color=ui.BLUE, width=2),
+fig.add_trace(go.Scatter(x=dc["deposit"], y=dc["book_margin"], mode="lines+markers", name="Annual book margin", line=dict(color=ui.PRIMARY, width=2),
                          marker=dict(size=8), customdata=dc[["signups", "margin_per_policy"]],
                          hovertemplate="Deposit %{x:.0%}<br>Book margin KES %{y:,.0f}<br>Sign-ups %{customdata[0]:.0%} of base<br>"
                                        "Margin per policy KES %{customdata[1]:,.0f}<extra></extra>"))

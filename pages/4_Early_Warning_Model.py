@@ -50,7 +50,7 @@ with left:
     fig = go.Figure()
     mx = max(ew.calibration[n][["mean_predicted", "observed"]].max().max() for n in ew.calibration) * 1.08
     fig.add_trace(go.Scatter(x=[0, mx], y=[0, mx], mode="lines", line=dict(color=ui.MUTED, width=1, dash="dot"), name="Perfect calibration", hoverinfo="skip"))
-    for name, color in [("Logistic regression", ui.BLUE), ("Gradient boosting", ui.ORANGE)]:
+    for name, color in [("Logistic regression", ui.PRIMARY), ("Gradient boosting", ui.ACCENT)]:
         cb = ew.calibration[name]
         fig.add_trace(go.Scatter(x=cb["mean_predicted"], y=cb["observed"], mode="lines+markers", name=name, line=dict(color=color, width=2),
                                  marker=dict(size=8), hovertemplate=name + "<br>Predicted %{x:.1%}<br>Observed %{y:.1%}<extra></extra>"))
@@ -63,7 +63,7 @@ with left:
     ui.takeaway(f"In the riskiest tenth the {ew.chosen.lower()} predicts {ui.pct(top['mean_predicted'])} and {ui.pct(top['observed'])} actually missed.")
 with right:
     lt = ew.lift[ew.chosen]
-    fig = go.Figure(go.Bar(x=lt["decile"], y=lt["observed_rate"], marker_color=[ui.ORANGE if d <= 3 else ui.BLUE for d in lt["decile"]],
+    fig = go.Figure(go.Bar(x=lt["decile"], y=lt["observed_rate"], marker_color=[ui.ACCENT if d <= 3 else ui.PRIMARY for d in lt["decile"]],
                            customdata=lt[["lift", "members"]],
                            hovertemplate="Decile %{x}<br>Observed miss rate %{y:.1%}<br>Lift %{customdata[0]:.2f}x<br>%{customdata[1]:,} instalments<extra></extra>"))
     base = (lt["observed_rate"] * lt["members"]).sum() / lt["members"].sum()

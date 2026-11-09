@@ -14,13 +14,7 @@ ui.page(
 cfg = ui.config()
 
 
-@st.cache_resource(show_spinner="Fitting the early warning models on earlier cohorts...")
-def early_warning():
-    art = ui.artifacts()
-    return art["early_warning"] if art else M.fit_early_warning(ui.q(M.FEATURES_SQL), cfg)
-
-
-ew = early_warning()
+ew = ui.early_warning_model()
 g = cfg["product"]["grace_days"]
 
 st.markdown(

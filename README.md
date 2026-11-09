@@ -86,7 +86,10 @@ This lab asks three things of a seeded synthetic book of 20,000 policies:
       <img src="assets/screenshots/6_methods_and_assumptions.png" alt="Methods and Assumptions page">
       <p align="center"><b>Methods and Assumptions</b><br><sub>Data dictionary, every assumption, diagnostics, the R cross-check and an IFRS 17 note.</sub></p>
     </td>
-    <td valign="top"></td>
+    <td valign="top">
+      <img src="assets/screenshots/7_policy_lookup.png" alt="Policy Lookup page">
+      <p align="center"><b>Policy Lookup</b><br><sub>Any single policy month by month: premium in, claims out, late payments, and its early warning risk before each due date.</sub></p>
+    </td>
   </tr>
 </table>
 
@@ -112,12 +115,13 @@ The job asks for SQL, Python and R, so the lab uses all three, each for what it 
 | | Layer | What it does | Where |
 |:---:|---|---|---|
 | **01** | **Data** | 20,000 policies over 24 inception months, with schedules, payments, status events and claims, observed at 31 March 2026. Missed payments depend on income type, channel, payment method, affordability, age, prior late payments and calendar months. A buy-to-claim share, larger at low deposits, front-loads claims and stops paying. Large claims raise the chance of missing the next instalment. | `src/generate.py`<br>`src/config.yaml` |
-| **02** | **SQL** | Every business metric is a DuckDB view: policy-month exposure, crude decrements with Wilson intervals, cohort persistency, premium written against collected, grace cure rates, claims to collected for stayers and lapsers, claim-then-lapse timing, leakage and segment decrements. Each headline number in the app has a "See the SQL" expander. | `sql/01` to `sql/08` |
+| **02** | **SQL** | Every business metric is a DuckDB view: policy-month exposure, crude decrements with Wilson intervals, cohort persistency, premium written against collected, grace cure rates, claims to collected for stayers and lapsers, claim-then-lapse timing, leakage and segment decrements. Each headline number in the app has a "See the SQL" expander. | `sql/01` to `sql/09` |
 | **03** | **Decrements** | Monthly lapse rates by duration with exposure and 95% intervals, set out as a decrement table. Policies not yet observed are censored at the valuation date, not counted as survivors. | Persistency Explorer |
 | **04** | **Survival** | Kaplan-Meier persistency by segment, identical to the decrement table on whole-month durations. Cox proportional hazards with hazard ratios and intervals. The proportional hazards check fails for number of instalments and deposit size, and the app says why. | `src/models.py` |
-| **05** | **Early warning** | Predicts "misses the next instalment beyond grace" with features taken 7 days before each due date, trained on earlier cohorts and tested on later ones. Gradient boosting adds less than 0.01 AUC, so the simpler logistic regression is kept. | Early Warning Model |
-| **06** | **Simulation** | Monte Carlo on the fitted models: a discrete-time hazard for missed payments, a mixture cure model for time to pay, claim frequency per covered member-month with a deposit-linked anti-selection loading, and resampled claim sizes. Back-tested against the actual book, where it understates leakage; the app says so plainly. | `src/simulate.py` |
-| **07** | **R cross-check** | `r/km_cox_check.R` refits Kaplan-Meier and Cox in R's `survival` package from the same exported data. Python and R agree to 1e-15 on Kaplan-Meier and 2e-6 on Cox coefficients, both with Efron ties. | `r/`, Methods page |
+| **05** | **Policy Lookup** | Open one policy and follow it through its year of cover: cumulative premium against cumulative claims, suspensions and lapse, days late on each instalment, the early warning score before each due date, and how it compares with similar policies. | Policy Lookup |
+| **06** | **Early warning** | Predicts "misses the next instalment beyond grace" with features taken 7 days before each due date, trained on earlier cohorts and tested on later ones. Gradient boosting adds less than 0.01 AUC, so the simpler logistic regression is kept. | Early Warning Model |
+| **07** | **Simulation** | Monte Carlo on the fitted models: a discrete-time hazard for missed payments, a mixture cure model for time to pay, claim frequency per covered member-month with a deposit-linked anti-selection loading, and resampled claim sizes. Back-tested against the actual book, where it understates leakage; the app says so plainly. | `src/simulate.py` |
+| **08** | **R cross-check** | `r/km_cox_check.R` refits Kaplan-Meier and Cox in R's `survival` package from the same exported data. Python and R agree to 1e-15 on Kaplan-Meier and 2e-6 on Cox coefficients, both with Efron ties. | `r/`, Methods page |
 
 Tests in `tests/` check row counts, no negative amounts, date consistency, the lapse rule, waiting periods, that exposure reconciles to policy counts, that rates sit between 0 and 1, that collected premium never exceeds written premium, and that the saved model results match the current code and data.
 

@@ -28,6 +28,7 @@ PAGES = [
     ("1_the_problem", "the-problem"),
     ("2_persistency_explorer", "persistency-explorer"),
     ("3_anti_selection_and_leakage", "anti-selection-and-leakage"),
+    ("7_policy_lookup", "policy-lookup"),
     ("4_early_warning_model", "early-warning-model"),
     ("5_product_levers_simulator", "product-levers-simulator"),
     ("6_methods_and_assumptions", "methods-and-assumptions"),

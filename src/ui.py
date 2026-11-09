@@ -121,6 +121,17 @@ def artifacts() -> dict | None:
     return A.load()
 
 
+@st.cache_resource(show_spinner="Fitting the early warning models on earlier cohorts...")
+def early_warning_model():
+    """The chosen early warning model: precomputed if available, otherwise fitted now."""
+    art = artifacts()
+    if art:
+        return art["early_warning"]
+    from src import models as M
+
+    return M.fit_early_warning(q(M.FEATURES_SQL), config())
+
+
 @st.cache_data(show_spinner=False)
 def config() -> dict:
     return load_config()

@@ -41,7 +41,7 @@ with tabs[0]:
     for t, cols in DICT.items():
         st.markdown(f"**{t}** ({counts[t]:,} rows)")
         st.dataframe(pd.DataFrame({"Column": list(cols), "Meaning": list(cols.values())}), hide_index=True, use_container_width=True)
-    st.markdown("**SQL views** (`sql/01` to `sql/08`, run in order by `src/db.py`)")
+    st.markdown("**SQL views** (`sql/01` to `sql/09`, run in order by `src/db.py`)")
     views = ui.q("SELECT table_name FROM information_schema.tables WHERE table_type = 'VIEW' AND table_name LIKE 'v_%' ORDER BY 1")
     st.write(", ".join(f"`{v}`" for v in views["table_name"]))
 

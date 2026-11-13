@@ -121,11 +121,38 @@ book_s = nb * sign_s * s["margin_per_policy"]
 
 
 def fmt_be(x):
-    return "above 100%" if x is None else ui.pct(x)
+    if x is None:
+        return "above 100%"
+    if x <= 0:
+        return f"None needed, {ui.pct(-x)} headroom"
+    return ui.pct(x)
+
+
+def _be_state(x):
+    if x is None:
+        return "would need a loading above 100% to break even"
+    if x <= 0:
+        return f"needs no loading and has {ui.pct(-x)} headroom"
+    return f"needs a {ui.pct(x)} loading to break even"
+
+
+def _be_sentence(base, scen):
+    return f"The base case {_be_state(base)}; this scenario {_be_state(scen)}."
 
 
 # ------------------------------------------------------------- headline comparison
 st.subheader(":material/compare: Base case against your scenario")
+OBS_SQL = "SELECT persistency FROM v_lapse_decrements WHERE duration = 10"
+observed_p10 = float(ui.q(OBS_SQL)["persistency"].iloc[0])
+backtest = (ui.artifacts() or {}).get("backtest")
+st.info(
+    f"Why the base case shows {ui.pct(b['persistency'][-1])} at month 10 and not the {ui.pct(observed_p10)} in Chapter 2: "
+    f"Chapter 2 is the observed book, where members chose deposits from 10% to 40%. The base case here puts every policy on a "
+    f"10% deposit and 10 instalments and simulates it, so it lapses more."
+    + (f" Replayed on each policy's own deposit and instalments, the simulator gives {ui.pct(backtest['persistency'][-1])}, "
+       "close to the observed figure (appendix, Simulator check)." if backtest else ""),
+    icon=":material/info:",
+)
 st.caption(
     f"Base case: {ui.pct(BASE.deposit, 0)} deposit, {BASE.n_instalments} instalments, {BASE.grace_days} days grace, waiting periods "
     f"{BASE.waiting['outpatient']}/{BASE.waiting['inpatient']}/{BASE.waiting['maternity']}/{BASE.waiting['chronic']} months "
@@ -171,8 +198,8 @@ if scn == BASE:
 else:
     ui.takeaway(
         f"This scenario moves claims to collected premium from {ui.pct(b['claims_to_collected'])} to {ui.pct(s['claims_to_collected'])} and leakage "
-        f"from {ui.kes(b['leakage_per_policy'])} to {ui.kes(s['leakage_per_policy'])} per policy written; the loading needed to break even goes from "
-        f"{fmt_be(be_base)} to {fmt_be(be_scn)}."
+        f"from {ui.kes(b['leakage_per_policy'])} to {ui.kes(s['leakage_per_policy'])} per policy written. "
+        + _be_sentence(be_base, be_scn)
     )
 
 # ------------------------------------------------------------- charts
@@ -218,10 +245,18 @@ fig.update_yaxes(tickformat=",.0f", title="KES per year")
 fig.update_layout(title=f"Annual book margin against deposit, at sign-up elasticity {elasticity:.2f}")
 ui.plot(fig, 360)
 best = dc.loc[dc["book_margin"].idxmax()]
-ui.takeaway(
-    f"With {int(nb):,} new policies a year at a 10% deposit and an elasticity of {elasticity:.2f}, the book margin peaks at a "
-    f"{ui.pct(best['deposit'], 0)} deposit ({ui.kes(best['book_margin'], short=True)} a year). A higher deposit cuts leakage per policy but sells fewer policies."
-)
+top_dep = dc["deposit"].max()
+if best["deposit"] >= top_dep - 1e-9:
+    ui.takeaway(
+        f"With {int(nb):,} new policies a year at a 10% deposit and an elasticity of {elasticity:.2f}, the book margin rises across the whole "
+        f"tested range, up to a {ui.pct(top_dep, 0)} deposit ({ui.kes(best['book_margin'], short=True)} a year). {ui.pct(top_dep, 0)} is the largest "
+        "deposit in the book, so the models are not pushed beyond it. A higher sign-up elasticity is what would bring the peak inside the range."
+    )
+else:
+    ui.takeaway(
+        f"With {int(nb):,} new policies a year at a 10% deposit and an elasticity of {elasticity:.2f}, the book margin peaks at a "
+        f"{ui.pct(best['deposit'], 0)} deposit ({ui.kes(best['book_margin'], short=True)} a year). A higher deposit cuts leakage per policy but sells fewer policies."
+    )
 
 with st.expander("How the simulator works, and the fitted inputs it uses"):
     mm = inp.miss

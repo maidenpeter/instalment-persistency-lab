@@ -49,11 +49,11 @@
 
   <rect x="60" y="256" width="1160" height="1" fill="url(#rule)"/>
 
-  <text x="60" y="318" class="serif num">56.4%</text>
+  <text x="60" y="318" class="serif num">57.3%</text>
   <text x="60" y="346" class="sans lab">of policies still in force after their 10th instalment</text>
   <text x="460" y="318" class="serif num">KES 1.14</text>
   <text x="460" y="346" class="sans lab">paid in claims for every KES 1 a lapsing member paid in</text>
-  <text x="860" y="318" class="serif num">KES 48.8m</text>
+  <text x="860" y="318" class="serif num">KES 50.1m</text>
   <text x="860" y="346" class="sans lab">claims above premium collected on lapsed policies</text>
 
   <text x="1220" y="398" text-anchor="end" class="sans fine">Synthetic portfolio. Illustrative only.</text>

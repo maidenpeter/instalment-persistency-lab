@@ -6,10 +6,10 @@ seed: 20261116  # random seed, so the synthetic book is identical on every build
 
 book:
   n_policies: 20000  # policies written over the whole inception window
-  first_inception: "2024-01-01"  # first inception month
+  first_inception: "2024-07-01"  # first inception month
   n_inception_months: 24  # inception window length in months
   monthly_growth: 0.025  # month-on-month growth in new business volume
-  valuation_date: "2026-03-31"  # experience is observed up to this date
+  valuation_date: "2026-09-30"  # experience is observed up to this date
   runoff_days: 60  # days after cover ends before a policy counts as fully run off
 
 product:
@@ -117,7 +117,7 @@ claims:  # frequency per member per month and severity (Mid tier, age 30-39)
   maternity_age_range: [20, 42]  # principals in this age range with family size of 2 or more are eligible
 
 model:
-  train_cutoff_inception: "2025-03-01"  # early warning model trains on cohorts incepted before this date
+  train_cutoff_inception: "2025-09-01"  # early warning model trains on cohorts incepted before this date
   snapshot_days_before_due: 7  # features are taken this many days before each due date
   call_horizon_days: 7  # call list covers instalments due in the week after the valuation date
   gbm_keep_threshold_auc: 0.01  # keep the gradient boosting model only if it beats logistic regression by this much AUC

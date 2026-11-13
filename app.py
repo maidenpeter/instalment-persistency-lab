@@ -6,7 +6,8 @@ HOME_SQL = {
     "persistency": "SELECT persistency FROM v_lapse_decrements WHERE duration = 10",
     "claims_to_collected": "SELECT persistency_group, deposit_band, policies, collected_kes, claims_paid_kes, claims_to_collected\n"
                            "FROM v_claims_to_collected ORDER BY persistency_group DESC, deposit_band",
-    "leakage": "SELECT SUM(leakage_kes) AS leakage, COUNT(*) AS lapsed, SUM(is_leaking::INT) AS leaking FROM v_leakage",
+    "leakage": "SELECT SUM(leakage_kes) AS leakage, COUNT(*) AS lapsed, SUM(is_leaking::INT) AS leaking,\n"
+               "       (SELECT COUNT(*) FROM v_policy WHERE is_run_off) AS run_off\nFROM v_leakage",
 }
 
 
@@ -24,10 +25,12 @@ def home() -> None:
     lapser, stayer = allr.loc["Lapser", "claims_to_collected"], allr.loc["Stayer", "claims_to_collected"]
 
     c1, c2, c3 = st.columns(3)
-    ui.kpi(c1, "Still in force after 10 instalments", ui.pct(dec["persistency"].iloc[0]), "Product of the monthly lapse decrements")
+    ui.kpi(c1, "Still in force after 10 instalments", ui.pct(dec["persistency"].iloc[0]),
+           "Observed book, all deposit sizes. Product of the monthly lapse decrements")
     ui.kpi(c2, "Claims paid per KES 1 collected, lapsers", f"KES {lapser:.2f}", f"Stayers: KES {stayer:.2f}")
     ui.kpi(c3, "Claims in excess of premium, lapsed policies", ui.kes(leak["leakage"].iloc[0], short=True),
-           f"{int(leak['leaking'].iloc[0]):,} of {int(leak['lapsed'].iloc[0]):,} lapsed policies claimed more than they paid")
+           f"{int(leak['leaking'].iloc[0]):,} of {int(leak['lapsed'].iloc[0]):,} lapsed policies claimed more than they paid. "
+           f"Counted among the {int(leak['run_off'].iloc[0]):,} policies whose year of cover has ended; younger policies are still running.")
     st.write("")
     band = ctc[ctc["deposit_band"] != "All"]
     ui.plot(ui.ctc_by_deposit_figure(band), 380)

@@ -47,15 +47,17 @@ st.subheader(":material/insights: What the synthetic book shows")
 dec = ui.q("SELECT duration, exposed, lapses, q, persistency FROM v_lapse_decrements ORDER BY duration")
 ctc = ui.q("SELECT persistency_group, policies, collected_kes, claims_paid_kes, claims_to_collected "
            "FROM v_claims_to_collected WHERE deposit_band = 'All'").set_index("persistency_group")
-leak = ui.q("SELECT SUM(leakage_kes) AS leakage_kes, COUNT(*) AS lapsed_policies, SUM(is_leaking::INT) AS leaking_policies FROM v_leakage")
+leak = ui.q("SELECT SUM(leakage_kes) AS leakage_kes, COUNT(*) AS lapsed_policies, SUM(is_leaking::INT) AS leaking_policies, "
+           "(SELECT COUNT(*) FROM v_policy WHERE is_run_off) AS run_off FROM v_leakage")
 p10 = dec.loc[dec["duration"] == 10, "persistency"].iloc[0]
 
 c1, c2, c3 = st.columns(3)
-ui.kpi(c1, "Persistency at month 10", ui.pct(p10), f"{ui.pct(1 - p10)} of policies lapse before their 10th instalment")
+ui.kpi(c1, "Persistency at month 10", ui.pct(p10), f"So {ui.pct(1 - p10)} lapse before their 10th instalment. Observed book, all deposits")
 ui.kpi(c2, "Claims to collected premium, lapsers", ui.pct(ctc.loc["Lapser", "claims_to_collected"]),
        f"Stayers: {ui.pct(ctc.loc['Stayer', 'claims_to_collected'])}")
 ui.kpi(c3, "Leakage on lapsed policies", ui.kes(leak["leakage_kes"].iloc[0], short=True),
-       f"{int(leak['leaking_policies'].iloc[0]):,} of {int(leak['lapsed_policies'].iloc[0]):,} lapsed policies claimed more than they paid")
+       f"{int(leak['leaking_policies'].iloc[0]):,} of {int(leak['lapsed_policies'].iloc[0]):,} lapsed policies claimed more than they paid. "
+       f"Counted among the {int(leak['run_off'].iloc[0]):,} policies whose year of cover has ended.")
 st.write("")
 ratio = ctc.loc["Lapser", "claims_to_collected"] / ctc.loc["Stayer", "claims_to_collected"]
 ui.takeaway(
@@ -73,7 +75,8 @@ SELECT persistency_group, policies, collected_kes, claims_paid_kes, claims_to_co
 FROM v_claims_to_collected WHERE deposit_band = 'All';
 
 -- Leakage: claims in excess of premium collected on lapsed policies
-SELECT SUM(leakage_kes) AS leakage_kes, COUNT(*) AS lapsed_policies, SUM(is_leaking::INT) AS leaking_policies
+SELECT SUM(leakage_kes) AS leakage_kes, COUNT(*) AS lapsed_policies, SUM(is_leaking::INT) AS leaking_policies,
+       (SELECT COUNT(*) FROM v_policy WHERE is_run_off) AS run_off
 FROM v_leakage;
 """,
     ["v_lapse_decrements", "v_claims_to_collected", "v_leakage"],

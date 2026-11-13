@@ -135,13 +135,21 @@ with tabs[3]:
     fails = ph[ph["p-value"] < 0.05]["Covariate"].tolist()
     st.markdown("**Proportional hazards check** (Schoenfeld residuals against rank of time).")
     st.dataframe(ph.style.format({"Chi-square": "{:.2f}", "p-value": "{:.4f}"}), hide_index=True, use_container_width=True)
+    big = ph.sort_values("Chi-square", ascending=False)
+    minor = [c for c in fails if c not in ("n_instalments", "deposit_per_10pts")]
+    minor_note = (
+        f" The other terms flagged at the 5% level ({', '.join(minor)}) have far smaller test statistics "
+        f"(largest {big[big['Covariate'].isin(minor)]['Chi-square'].max():.1f}, against "
+        f"{big.loc[big['Covariate'] == 'n_instalments', 'Chi-square'].iloc[0]:.0f} for the number of instalments) and are borderline."
+        if minor else ""
+    )
     st.warning(
-        "Where it fails: " + ", ".join(fails) + ". "
+        "Where it fails at the 5% level: " + ", ".join(fails) + ". "
         "The number of instalments breaks proportional hazards by construction: a member on 6 instalments has no lapse risk left after month 6, "
         "so the hazard ratio against a 10-instalment member changes sign over time. Deposit size also fails: its effect is concentrated in the "
         "first months, when members who joined to claim stop paying, and fades after. The single hazard ratios for these two are averages over "
         "the term and should not be read as constant effects. Stratifying by number of instalments, or a time-varying deposit effect, would fix this; "
-        "the discrete-time hazard model behind the simulator already handles duration directly."
+        "the discrete-time hazard model behind the simulator already handles duration directly." + minor_note
     )
 
 # ------------------------------------------------------------- R cross-check
@@ -184,8 +192,16 @@ with tabs[4]:
         )
         st.markdown("**Proportional hazards check in R** (`cox.zph`, rank time scale)")
         st.dataframe(ph_r.style.format({"chi_square": "{:.2f}", "p_value": "{:.4f}"}), hide_index=True, use_container_width=True)
-        st.caption("R's cox.zph uses a score test against the full model, while lifelines tests one covariate at a time, so the statistics differ. "
-                   "Both flag the number of instalments and deposit size; R also flags affordability at the 1% level.")
+        r_fail = set(ph_r.loc[(ph_r["p_value"] < 0.05) & (ph_r["term"] != "GLOBAL"), "term"])
+        py_fail = {M.r_name(c) for c in cox_fit().ph_test.index[cox_fit().ph_test["p_value"] < 0.05]}
+        both, r_only, py_only = sorted(r_fail & py_fail), sorted(r_fail - py_fail), sorted(py_fail - r_fail)
+        st.caption(
+            "R's cox.zph uses a score test against the full model, while lifelines tests one covariate at a time, so the statistics differ. "
+            f"Both flag {', '.join(both) or 'nothing'}"
+            + (f"; only R flags {', '.join(r_only)}" if r_only else "")
+            + (f"; only lifelines flags {', '.join(py_only)}" if py_only else "")
+            + ". Terms flagged by one test only are borderline."
+        )
 
 # ------------------------------------------------------------- simulator back-test
 with tabs[5]:

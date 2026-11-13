@@ -4,9 +4,8 @@ import streamlit as st
 from src import ui
 
 ui.page(
-    "Anti-Selection and Leakage",
-    "What lapse costs. Claims paid against premium actually collected, for members who stay and members who lapse. "
-    "Run-off cohorts only, so every policy here has a final outcome.",
+    "cost",
+    "Lapse on its own is lost premium. It gets expensive when the members who lapse are the ones who claimed. This chapter sets what stayers and lapsers were paid against what they actually paid in. Run-off cohorts only, so every policy here has a final outcome.",
 )
 
 # ------------------------------------------------------------- claims to collected

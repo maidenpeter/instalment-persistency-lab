@@ -1,6 +1,8 @@
 """Shared formatting, page setup, data access and chart theme for every page."""
 from __future__ import annotations
 
+from pathlib import Path
+
 import plotly.graph_objects as go
 import plotly.io as pio
 import streamlit as st
@@ -10,23 +12,44 @@ from src import db
 from src.generate import load_config
 
 SYNTHETIC_LABEL = "Synthetic portfolio. Illustrative only."
+APP_NAME = "Instalment Persistency Lab"
+ASSETS = Path(__file__).resolve().parents[1] / "assets"
 
-# Pink and lavender palette. Categorical order validated for colour-blind separation and contrast.
-INK = "#3d1f35"
-INK_2 = "#6d4560"
-MUTED = "#a07a92"
-GRID = "#f6dce8"
-AXIS = "#e9bfd3"
-SURFACE = "#fffafc"
-PRIMARY = "#7357d6"  # violet: stayers, base case, observed
-ACCENT = "#e0457b"  # rose: lapsers, scenario, risk
-APRICOT = "#d97a1e"
-TEAL = "#00998a"
-ORCHID = "#b44fc0"
-SERIES = [PRIMARY, ACCENT, APRICOT, TEAL, ORCHID]
-SEQ_PINK = ["#fde7f0", "#f9c4da", "#f29abd", "#e46a9c", "#c94882", "#9c2f63", "#6b1f45"]
-SEQ_SCALE = [[i / (len(SEQ_PINK) - 1), c] for i, c in enumerate(SEQ_PINK)]
-HIGHLIGHT_ROW = "#fde7f0"
+# The story, in order. Every page belongs to one chapter; Methods is the appendix.
+CHAPTERS = [
+    {"key": "problem", "path": "pages/1_The_Problem.py", "nav": "The Problem", "url": "the-problem",
+     "title": "The problem", "teaser": "Cover that starts on a 10% deposit runs ahead of the cash."},
+    {"key": "who", "path": "pages/2_Persistency_Explorer.py", "nav": "Who Lapses", "url": "who-lapses",
+     "title": "Who lapses, and when", "teaser": "Lapse rates month by month, by segment and by cohort."},
+    {"key": "cost", "path": "pages/3_Anti_Selection_and_Leakage.py", "nav": "What It Costs", "url": "what-it-costs",
+     "title": "What lapse costs", "teaser": "Claims paid against premium actually collected, and the leakage in KES."},
+    {"key": "one", "path": "pages/7_Policy_Lookup.py", "nav": "One Policy", "url": "one-policy",
+     "title": "One policy, start to finish", "teaser": "Follow a single member through a year: paid in, paid out, slipped, lapsed."},
+    {"key": "warn", "path": "pages/4_Early_Warning_Model.py", "nav": "Early Warning", "url": "early-warning",
+     "title": "Catching it early", "teaser": "Who will miss the next instalment, and who to call this week."},
+    {"key": "fix", "path": "pages/5_Product_Levers_Simulator.py", "nav": "Fixing It", "url": "fixing-it",
+     "title": "Fixing the product", "teaser": "Deposit, instalments, grace, waiting periods and benefit release, tested."},
+]
+APPENDIX = {"key": "methods", "path": "pages/6_Methods_and_Assumptions.py", "nav": "Methods", "url": "methods",
+            "title": "Methods and assumptions", "teaser": "Data, every assumption, diagnostics and the R cross-check."}
+
+# Neutral palette (validated categorical order). The only colour of its own is the small rose signature.
+INK = "#1d2430"
+INK_2 = "#52514e"
+MUTED = "#898781"
+GRID = "#e1e0d9"
+AXIS = "#c3c2b7"
+SURFACE = "#fcfcfb"
+PRIMARY = "#2a78d6"  # stayers, base case, observed
+ACCENT = "#eb6834"  # lapsers, scenario, risk
+TEAL = "#1baf7a"
+APRICOT = "#eda100"
+ORCHID = "#e87ba4"
+SERIES = [PRIMARY, ACCENT, TEAL, APRICOT, ORCHID]
+SEQ_BLUE = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
+SEQ_SCALE = [[i / (len(SEQ_BLUE) - 1), c] for i, c in enumerate(SEQ_BLUE)]
+HIGHLIGHT_ROW = "#fdf0ea"
+ROSE = "#b5577a"
 
 
 def rgba(hex_color: str, alpha: float) -> str:
@@ -36,46 +59,51 @@ def rgba(hex_color: str, alpha: float) -> str:
 
 _CSS = """
 <style>
-  .stApp {background: linear-gradient(180deg, #fff8fb 0%, #fff3f8 55%, #f8f1ff 100%);}
-  header[data-testid="stHeader"] {background: transparent; height: 2.5rem;}
-  .block-container {padding-top: 1.6rem; padding-bottom: 3rem; max-width: 1180px;}
-  h1 {font-weight: 700; letter-spacing: -0.01em; font-size: 2.5rem; padding-top: 0.2rem; padding-bottom: 0.35rem;
-      background: linear-gradient(90deg, #9c2f63 0%, #c2457f 45%, #6b3fa0 100%);
-      -webkit-background-clip: text; background-clip: text; color: transparent !important;}
-  h2, h3 {font-weight: 600; color: #7a2d5a;}
-  [data-testid="stMarkdownContainer"] h3 {padding-top: 1.4rem;}
-  [data-testid="stSidebar"] {background: linear-gradient(180deg, #fde6f0 0%, #f6e4fb 100%);}
-  [data-testid="stSidebarNav"] a span {font-size: 0.95rem;}
-  [data-testid="stSidebarNav"] a[aria-current="page"] {background: #ffffffb3; border-radius: 999px;}
-  .sidebar-brand {font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; font-weight: 700; color: #9c2f63;}
-  .sidebar-note {font-size: 0.82rem; color: #6d4560;}
-  .synthetic-banner {font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700;
-      color: #b8336a; background: #ffffffcc; border: 1px solid #f3a9c7; border-radius: 999px;
-      padding: 0.32rem 0.95rem; display: inline-block; margin-bottom: 0.5rem;}
-  .synthetic-banner::before {content: "\\2726"; color: #ec6fa0; margin-right: 0.45rem; letter-spacing: 0;}
-  .takeaway {color: #3d1f35; font-size: 0.97rem; margin: -0.3rem 0 1.4rem 0; padding: 0.6rem 0.9rem;
-      border-left: 4px solid #ec6fa0; background: #fff0f6cc; border-radius: 0 12px 12px 0;}
-  .kpi {background: #ffffff; border: 1px solid #f6cfe0; border-radius: 18px; padding: 1.05rem 1.2rem; height: 100%;
-      box-shadow: 0 8px 22px rgba(194, 84, 127, 0.10);}
-  .kpi .label {color: #6d4560; font-size: 0.86rem; margin-bottom: 0.2rem; font-weight: 600;}
-  .kpi .value {font-family: 'Playfair Display', Georgia, serif; color: #9c2f63; font-size: 2rem; font-weight: 700;
-      line-height: 1.15; white-space: nowrap;}
-  .kpi .note {color: #8a6a80; font-size: 0.8rem; margin-top: 0.35rem;}
-  .lede {font-size: 1.07rem; color: #5b2a48; line-height: 1.6; max-width: 62rem;}
-  [data-testid="stExpander"] details {background: #ffffffb3; border-radius: 14px;}
-  [data-testid="stVerticalBlockBorderWrapper"] {background: #ffffffb3;}
-  .stButton button, .stFormSubmitButton button, .stDownloadButton button {border-radius: 999px; padding-left: 1.2rem; padding-right: 1.2rem;}
-  [data-baseweb="tab-list"] button[aria-selected="true"] p {color: #b8336a; font-weight: 700;}
+  .block-container {padding-top: 5.2rem; padding-bottom: 2.5rem; max-width: 1160px;}
+  h1 {font-weight: 600; letter-spacing: -0.01em; font-size: 2.35rem; padding-top: 0; padding-bottom: 0.15rem;}
+  h2, h3 {font-weight: 600;}
+  [data-testid="stMarkdownContainer"] h3 {padding-top: 1.3rem;}
+  .kicker {font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; color: #b5577a;
+      margin-bottom: -0.2rem;}
+  .synthetic {font-size: 0.8rem; color: #6b6a66; margin: -0.2rem 0 0.9rem 0;}
+  .lede {font-size: 1.07rem; color: #2b3340; line-height: 1.6; max-width: 62rem;}
+  .takeaway {color: #1d2430; font-size: 0.96rem; margin: -0.3rem 0 1.4rem 0; padding-left: 0.8rem;
+      border-left: 3px solid #c3c2b7;}
+  .kpi {background: #ffffff; border: 1px solid #e3e5e8; border-radius: 10px; padding: 1rem 1.1rem; height: 100%;}
+  .kpi .label {color: #52514e; font-size: 0.85rem; margin-bottom: 0.25rem;}
+  .kpi .value {color: #1d2430; font-size: 1.8rem; font-weight: 600; line-height: 1.15; white-space: nowrap;}
+  .kpi .note {color: #6b6a66; font-size: 0.8rem; margin-top: 0.35rem;}
+  .next-up {font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: #6b6a66; margin-bottom: 0.1rem;}
+  .signature {display: flex; align-items: center; gap: 0.7rem; margin-top: 0.4rem;}
+  .signature img {width: 40px; height: 40px;}
+  .signature .who {font-size: 0.86rem; color: #2b3340;}
+  .signature .who b {color: #8e3a5d; font-weight: 600;}
+  .signature .fine {font-size: 0.76rem; color: #6b6a66;}
   [data-testid="stMetricValue"] {font-size: 1.6rem;}
-  @media (max-width: 640px) { .kpi .value {font-size: 1.6rem;} h1 {font-size: 1.9rem;} }
+  @media (max-width: 640px) { .kpi .value {font-size: 1.5rem;} h1 {font-size: 1.85rem;} }
 </style>
 """
+
+
+def _data_uri(name: str) -> str:
+    import base64
+
+    return "data:image/svg+xml;base64," + base64.b64encode((ASSETS / name).read_bytes()).decode()
+
+
+def _chapter(key: str) -> tuple[dict, int | None]:
+    for i, c in enumerate(CHAPTERS, 1):
+        if c["key"] == key:
+            return c, i
+    if key == APPENDIX["key"]:
+        return APPENDIX, None
+    return {"key": "home", "title": APP_NAME, "path": None}, None
 
 
 def _register_template() -> None:
     t = go.layout.Template()
     t.layout = go.Layout(
-        font=dict(family="Nunito Sans, system-ui, -apple-system, Segoe UI, sans-serif", size=13, color=INK),
+        font=dict(family="'Source Sans Pro', 'Source Sans 3', system-ui, -apple-system, Segoe UI, sans-serif", size=13, color=INK),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor=SURFACE,
         colorway=SERIES,
@@ -83,8 +111,8 @@ def _register_template() -> None:
         xaxis=dict(gridcolor=GRID, linecolor=AXIS, zeroline=False, ticks="", title_font=dict(color=INK_2, size=12)),
         yaxis=dict(gridcolor=GRID, linecolor=AXIS, zeroline=False, ticks="", title_font=dict(color=INK_2, size=12)),
         legend=dict(orientation="h", yanchor="bottom", y=1.01, x=0, title_text="", font=dict(size=12)),
-        hoverlabel=dict(bgcolor="white", font_size=12, bordercolor=ACCENT),
-        title=dict(font=dict(size=15, color="#7a2d5a", family="Playfair Display, Georgia, serif"), x=0, xanchor="left", y=0.985, yanchor="top", yref="container"),
+        hoverlabel=dict(bgcolor="white", font_size=12, bordercolor=AXIS),
+        title=dict(font=dict(size=14, color=INK), x=0, xanchor="left", y=0.985, yanchor="top", yref="container"),
     )
     pio.templates["lab"] = t
     pio.templates.default = "lab"
@@ -93,14 +121,21 @@ def _register_template() -> None:
 _register_template()
 
 
-def page(title: str, subtitle: str | None = None) -> None:
-    st.set_page_config(page_title=f"{title} | Instalment Persistency Lab", layout="wide", initial_sidebar_state="auto")
+def page(key: str, lede: str | None = None) -> None:
+    """Page frame: chapter label, title at the top, synthetic label, and an optional lede."""
+    chapter, n = _chapter(key)
+    st.session_state["_page_key"] = key
+    title = f"{chapter['title']} | {APP_NAME}" if key != "home" else APP_NAME
+    st.set_page_config(page_title=title, page_icon=str(ASSETS / "mark.svg"), layout="wide", initial_sidebar_state="collapsed")
     st.markdown(_CSS, unsafe_allow_html=True)
-    st.markdown(f'<div class="synthetic-banner">{SYNTHETIC_LABEL}</div>', unsafe_allow_html=True)
-    st.title(title)
-    if subtitle:
-        st.markdown(f'<p class="lede">{subtitle}</p>', unsafe_allow_html=True)
-    st.sidebar.markdown(f"**Instalment Persistency Lab**  \n{SYNTHETIC_LABEL}")
+    if n:
+        st.markdown(f'<div class="kicker">Chapter {n} of {len(CHAPTERS)}</div>', unsafe_allow_html=True)
+    elif key == "methods":
+        st.markdown('<div class="kicker">Appendix</div>', unsafe_allow_html=True)
+    st.title(chapter["title"])
+    st.markdown(f'<div class="synthetic">{SYNTHETIC_LABEL}</div>', unsafe_allow_html=True)
+    if lede:
+        st.markdown(f'<p class="lede">{lede}</p>', unsafe_allow_html=True)
 
 
 @st.cache_resource(show_spinner="Building the synthetic book and SQL views...")
@@ -194,9 +229,27 @@ def ctc_by_deposit_figure(band) -> go.Figure:
 
 
 def footer() -> None:
+    """Next chapter in the story, then the signature."""
+    key = st.session_state.get("_page_key", "home")
+    _, n = _chapter(key)
     st.divider()
-    st.caption(
-        f"{SYNTHETIC_LABEL} Every number on this page comes from a seeded synthetic book of "
-        "health covers that activate on the first instalment. Product prices, limits and effect sizes are "
-        "assumptions listed on the Methods and Assumptions page."
+    nxt = None
+    if key == "home":
+        nxt, label = CHAPTERS[0], f"Start the story: Chapter 1, {CHAPTERS[0]['title']}"
+    elif n is not None and n < len(CHAPTERS):
+        nxt, label = CHAPTERS[n], f"Chapter {n + 1}: {CHAPTERS[n]['title']}"
+    elif n == len(CHAPTERS):
+        nxt, label = APPENDIX, f"Appendix: {APPENDIX['title']}"
+    if nxt:
+        with st.container(border=True):
+            st.markdown('<div class="next-up">Next</div>', unsafe_allow_html=True)
+            st.page_link(nxt["path"], label=f"**{label}**", icon=":material/arrow_forward:")
+            st.caption(nxt["teaser"])
+    sig = _data_uri("signature.svg")
+    st.markdown(
+        f'<div class="signature"><img src="{sig}" alt="MP monogram"><div>'
+        f'<div class="who">Made by <b>Marion Peter</b></div>'
+        f'<div class="fine">{SYNTHETIC_LABEL} Every number comes from a seeded synthetic book; '
+        f'the assumptions are listed in the appendix.</div></div></div>',
+        unsafe_allow_html=True,
     )

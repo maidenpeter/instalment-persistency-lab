@@ -26,12 +26,12 @@ WIDTH = 1440
 PAGES = [
     ("0_home", ""),
     ("1_the_problem", "the-problem"),
-    ("2_persistency_explorer", "persistency-explorer"),
-    ("3_anti_selection_and_leakage", "anti-selection-and-leakage"),
-    ("7_policy_lookup", "policy-lookup"),
-    ("4_early_warning_model", "early-warning-model"),
-    ("5_product_levers_simulator", "product-levers-simulator"),
-    ("6_methods_and_assumptions", "methods-and-assumptions"),
+    ("2_who_lapses", "who-lapses"),
+    ("3_what_it_costs", "what-it-costs"),
+    ("4_one_policy", "one-policy"),
+    ("5_early_warning", "early-warning"),
+    ("6_fixing_it", "fixing-it"),
+    ("7_methods", "methods"),
 ]
 
 
@@ -108,7 +108,8 @@ async def main():
                 h = await wait_idle(cdp)
                 ready = time.time() - t0 - 3  # wait_idle confirms idle over 3 extra seconds
                 errors = await cdp.js("document.querySelectorAll('[data-testid=stException]').length")
-                full = await shoot(cdp, h + 140, OUT / f"{name}.png")
+                full = await shoot(cdp, h + 140)
+                full.crop((0, 0, WIDTH, min(900, full.size[1]))).save(OUT / f"{name}.png", optimize=True)
                 print(f"{name:32s} ready in about {ready:4.1f}s  errors={errors}  size={full.size}")
                 # walkthrough frames: top of page, then two further sections where the page is long
                 for y in [0, 900, 1800]:

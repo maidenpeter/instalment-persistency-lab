@@ -7,9 +7,8 @@ from src import models as M
 from src import ui
 
 ui.page(
-    "Early Warning Model",
-    "Who is likely to miss the next instalment, how well the model ranks them, and which in-force members to "
-    "call before their next due date.",
+    "warn",
+    "If lapse can be seen coming, some of it can be stopped. A model trained on earlier cohorts scores every member before each due date and turns the scores into a call list for this week.",
 )
 cfg = ui.config()
 

@@ -6,7 +6,10 @@ from lifelines import KaplanMeierFitter
 from src import queries as Q
 from src import ui
 
-ui.page("Persistency Explorer", "Who lapses, and when. Lapse decrements by policy duration, with exposure, confidence intervals and cohort views.")
+ui.page(
+    "who",
+    "If cover runs ahead of cash, the first question is how many members stop paying, and when. This is the lapse experience of 20,000 synthetic policies, month by month, laid out the way an actuary would.",
+)
 
 opts = ui.q(
     "SELECT DISTINCT channel, income_type, plan_tier, deposit_band FROM v_policy"

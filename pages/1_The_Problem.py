@@ -4,7 +4,10 @@ import streamlit as st
 
 from src import ui
 
-ui.page("The Problem", "Cover that starts on the first payment means benefits run ahead of cash.")
+ui.page(
+    "problem",
+    "Some Kenyan health covers now start on the first instalment. That widens access, and it opens a gap: on day one a member can claim against a full year of benefits while the insurer holds a tenth of the premium.",
+)
 cfg = ui.config()
 g, r = cfg["product"]["grace_days"], cfg["product"]["reinstatement_days"]
 
@@ -78,7 +81,7 @@ FROM v_leakage;
 
 st.subheader("The three questions")
 a, b, c = st.columns(3)
-a.markdown("**Who lapses, and when?**  \nLapse decrements by policy duration, cohort and segment, with exposure and confidence intervals. See Persistency Explorer.")
-b.markdown("**What does lapse cost?**  \nClaims paid against premium actually collected, split by stayers and lapsers, and leakage in KES. See Anti-Selection and Leakage.")
-c.markdown("**Which levers fix it?**  \nDeposit, instalments, grace, waiting periods, benefit release and loading, tested on the fitted models. See Product Levers Simulator.")
+a.markdown("**Who lapses, and when?**  \nLapse decrements by policy duration, cohort and segment, with exposure and confidence intervals. Chapter 2.")
+b.markdown("**What does lapse cost?**  \nClaims paid against premium actually collected, split by stayers and lapsers, and leakage in KES. Chapter 3.")
+c.markdown("**Which levers fix it?**  \nDeposit, instalments, grace, waiting periods, benefit release and loading, tested on the fitted models. Chapter 6.")
 ui.footer()

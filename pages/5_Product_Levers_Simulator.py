@@ -10,9 +10,8 @@ from src import simulate as SM
 from src import ui
 
 ui.page(
-    "Product Levers Simulator",
-    "Change the product and see what happens to persistency, claims against premium collected, leakage and the "
-    "loading needed to break even. Every run uses the models fitted on the synthetic book, not the rules that generated it.",
+    "fix",
+    "The last question is what to change. Move the levers and the fitted models replay the book: persistency, claims against premium collected, leakage, and the loading needed to break even.",
 )
 cfg = ui.config()
 sim_cfg = cfg["simulator"]
@@ -211,5 +210,5 @@ with st.expander("How the simulator works, and the fitted inputs it uses"):
 """
     )
     st.code(SM.SAMPLE_SQL.strip() + ";\n\n" + SM.FREQ_SQL.strip() + ";\n\n" + M.MISS_SQL.strip() + ";\n\n" + M.CURE_SQL.strip() + ";", language="sql")
-st.caption("The simulator is checked against the actual book on the Methods and Assumptions page. Treat outputs as directional: they depend on the stated assumptions.")
+st.caption("The simulator is checked against the actual book in the appendix (Methods, Simulator check). Treat outputs as directional: they depend on the stated assumptions.")
 ui.footer()

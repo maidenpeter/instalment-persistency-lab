@@ -9,7 +9,10 @@ from src import simulate as SM
 from src import ui
 from src.generate import CONFIG_PATH, ROOT
 
-ui.page("Methods and Assumptions", "How every number in this lab is built, what it assumes, and where it is weak.")
+ui.page(
+    "methods",
+    "How every number in this lab is built, what it assumes, and where it is weak.",
+)
 cfg = ui.config()
 
 tabs = st.tabs(["Data", "Assumptions", "Definitions", "Survival models", "R cross-check", "Simulator check", "Limitations", "IFRS 17 note"])
@@ -259,7 +262,7 @@ Instalment cover changes several things under PAA:
   boundary of the contract only while the insurer can compel payment or the member keeps cover by paying. Expected lapses therefore shrink the
   premium cash flows that can be recognised, and uncollected instalments should not sit in receivables as if certain.
 - **Revenue recognition.** PAA insurance revenue is expected premium receipts allocated over the coverage period, usually by the passage of time.
-  If expected receipts are reduced for lapse, revenue for the cohort is reduced too. The decrement table on the Persistency Explorer is the natural
+  If expected receipts are reduced for lapse, revenue for the cohort is reduced too. The decrement table in Chapter 2 is the natural
   basis for that expected-receipts assumption.
 - **Onerous contract test.** PAA assumes contracts are not onerous unless facts and circumstances indicate otherwise. Instalment cohorts with
   low deposits are exactly where facts may indicate otherwise: claims are front-loaded, members who claim early lapse, and premium is never

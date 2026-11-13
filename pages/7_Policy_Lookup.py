@@ -6,9 +6,8 @@ from src import models as M
 from src import ui
 
 ui.page(
-    "Policy Lookup",
-    "Open any single policy and follow it through its year of cover: what it paid, what it claimed, when it slipped, "
-    "and what the early warning model said before each due date.",
+    "one",
+    "Averages hide people. Pick one policy and follow it through its year: every payment, every claim, every slip, and what the early warning model would have said before each due date.",
 )
 cfg = ui.config()
 g, r = cfg["product"]["grace_days"], cfg["product"]["reinstatement_days"]

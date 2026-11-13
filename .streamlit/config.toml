@@ -1,20 +1,14 @@
 [theme]
 base = "light"
-primaryColor = "#d6457f"
-backgroundColor = "#fff8fb"
-secondaryBackgroundColor = "#fdebf3"
-textColor = "#3d1f35"
-font = "Nunito Sans:https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap"
-headingFont = "Playfair Display:https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap"
-codeFont = "IBM Plex Mono:https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap"
-baseRadius = "0.85rem"
-borderColor = "#f4cfe0"
-linkColor = "#b8336a"
-
-[theme.sidebar]
-backgroundColor = "#fbe4ef"
-secondaryBackgroundColor = "#f8d6e6"
-borderColor = "#f1c4d8"
+primaryColor = "#2a5d8f"
+backgroundColor = "#f9f9f7"
+secondaryBackgroundColor = "#eef0f2"
+textColor = "#1d2430"
+font = "sans-serif"
+headingFont = "serif"
+codeFont = "monospace"
+baseRadius = "0.5rem"
+borderColor = "#e3e5e8"
 
 [server]
 headless = true

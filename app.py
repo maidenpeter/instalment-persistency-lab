@@ -2,12 +2,20 @@ import streamlit as st
 
 from src import ui
 
+HOME_SQL = {
+    "persistency": "SELECT persistency FROM v_lapse_decrements WHERE duration = 10",
+    "claims_to_collected": "SELECT persistency_group, deposit_band, policies, collected_kes, claims_paid_kes, claims_to_collected\n"
+                           "FROM v_claims_to_collected ORDER BY persistency_group DESC, deposit_band",
+    "leakage": "SELECT SUM(leakage_kes) AS leakage, COUNT(*) AS lapsed, SUM(is_leaking::INT) AS leaking FROM v_leakage",
+}
+
 
 def home() -> None:
     ui.page(
-        "Instalment Persistency Lab",
-        "A member pays a 10% deposit, claims in the first few months, then stops paying. How often does that happen, "
-        "what does it cost in claims paid against premium actually collected, and which product changes stop it?",
+        "home",
+        "A member pays a 10% deposit, claims in the first few months, then stops paying. This lab follows that story "
+        "through a synthetic book of 20,000 health covers: how often it happens, what it costs in claims paid against "
+        "premium actually collected, and which product changes stop it.",
     )
     dec = ui.q(HOME_SQL["persistency"])
     ctc = ui.q(HOME_SQL["claims_to_collected"])
@@ -30,21 +38,14 @@ def home() -> None:
     )
     ui.show_sql(";\n\n".join(HOME_SQL.values()), ["v_lapse_decrements", "v_claims_to_collected", "v_leakage"])
 
-    st.subheader("Inside the lab")
-    cards = [
-        ("pages/1_The_Problem.py", "The Problem", "The product structure, and why first-payment activation changes the risk."),
-        ("pages/2_Persistency_Explorer.py", "Persistency Explorer", "Lapse decrements by duration with exposure and confidence intervals, cohort heatmap, Kaplan-Meier curves."),
-        ("pages/3_Anti_Selection_and_Leakage.py", "Anti-Selection and Leakage", "Claims against premium collected for stayers and lapsers, claim-then-lapse timing, leakage in KES."),
-        ("pages/7_Policy_Lookup.py", "Policy Lookup", "Open any single policy and follow it month by month: premium in, claims out, late payments and risk."),
-        ("pages/4_Early_Warning_Model.py", "Early Warning Model", "Who will miss the next instalment, how well the model ranks them, and a call list for this week."),
-        ("pages/5_Product_Levers_Simulator.py", "Product Levers Simulator", "Deposit, instalments, grace, waiting periods, benefit release and loading, run on the fitted models."),
-        ("pages/6_Methods_and_Assumptions.py", "Methods and Assumptions", "Data dictionary, every assumption, model diagnostics, the R cross-check and an IFRS 17 note."),
-    ]
-    cols = st.columns(3)
-    for i, (path, name, desc) in enumerate(cards):
-        with cols[i % 3].container(border=True):
-            st.page_link(path, label=f"**{name}**")
-            st.caption(desc)
+    st.subheader("The story in six chapters")
+    for i, c in enumerate(ui.CHAPTERS, 1):
+        left, right = st.columns([0.07, 0.93], vertical_alignment="center")
+        left.markdown(f'<div class="kicker" style="font-size:0.95rem">{i:02d}</div>', unsafe_allow_html=True)
+        with right:
+            st.page_link(c["path"], label=f"**{c['title']}**")
+            st.caption(c["teaser"])
+    st.page_link(ui.APPENDIX["path"], label=f"Appendix: {ui.APPENDIX['title']}")
     st.caption(
         "SQL (DuckDB) computes every business metric, Python generates the data and fits the survival models and simulation, "
         "and R cross-checks the survival estimates."
@@ -52,24 +53,8 @@ def home() -> None:
     ui.footer()
 
 
-HOME_SQL = {
-    "persistency": "SELECT persistency FROM v_lapse_decrements WHERE duration = 10",
-    "claims_to_collected": "SELECT persistency_group, deposit_band, policies, collected_kes, claims_paid_kes, claims_to_collected\n"
-                           "FROM v_claims_to_collected ORDER BY persistency_group DESC, deposit_band",
-    "leakage": "SELECT SUM(leakage_kes) AS leakage, COUNT(*) AS lapsed, SUM(is_leaking::INT) AS leaking FROM v_leakage",
-}
-
-
-nav = st.navigation(
-    [
-        st.Page(home, title="Home", default=True),
-        st.Page("pages/1_The_Problem.py", title="The Problem", url_path="the-problem"),
-        st.Page("pages/2_Persistency_Explorer.py", title="Persistency Explorer", url_path="persistency-explorer"),
-        st.Page("pages/3_Anti_Selection_and_Leakage.py", title="Anti-Selection and Leakage", url_path="anti-selection-and-leakage"),
-        st.Page("pages/7_Policy_Lookup.py", title="Policy Lookup", url_path="policy-lookup"),
-        st.Page("pages/4_Early_Warning_Model.py", title="Early Warning Model", url_path="early-warning-model"),
-        st.Page("pages/5_Product_Levers_Simulator.py", title="Product Levers Simulator", url_path="product-levers-simulator"),
-        st.Page("pages/6_Methods_and_Assumptions.py", title="Methods and Assumptions", url_path="methods-and-assumptions"),
-    ]
-)
-nav.run()
+st.logo(str(ui.ASSETS / "wordmark.svg"), size="large")
+pages = [st.Page(home, title="Home", default=True)]
+pages += [st.Page(c["path"], title=c["nav"], url_path=c["url"]) for c in ui.CHAPTERS]
+pages += [st.Page(ui.APPENDIX["path"], title=ui.APPENDIX["nav"], url_path=ui.APPENDIX["url"])]
+st.navigation(pages, position="top").run()

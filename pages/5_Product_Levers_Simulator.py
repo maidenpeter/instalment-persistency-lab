@@ -51,27 +51,61 @@ def deposit_curve(scn_dict: dict) -> pd.DataFrame:
 
 
 # ------------------------------------------------------------- levers
-with st.form("levers"):
-    st.markdown("**Product levers** (opens on an example redesign: 20% deposit, benefits unlock with premium paid)")
-    c1, c2, c3 = st.columns(3)
-    deposit = c1.slider("Deposit, % of annual premium", 10, 40, int(round(DEFAULT.deposit * 100)), step=5) / 100
-    n_inst = c1.slider("Number of monthly instalments", 1, 10, BASE.n_instalments)
-    grace = c1.slider("Grace period, days", 0, 30, BASE.grace_days,
-                      help=f"Cover is suspended after grace; the policy lapses {cfg['product']['reinstatement_days']} days later if still unpaid.")
-    w_op = c2.slider("Waiting period, outpatient (months)", 0, 3, BASE.waiting["outpatient"])
-    w_ip = c2.slider("Waiting period, inpatient (months)", 0, 6, BASE.waiting["inpatient"])
-    w_mat = c2.slider("Waiting period, maternity (months)", 0, 12, BASE.waiting["maternity"])
-    w_chr = c2.slider("Waiting period, chronic (months)", 0, 12, BASE.waiting["chronic"])
-    release = c3.radio("Benefit release", ["Full cover from first payment", "Benefits unlock with premium paid"], index=1 if DEFAULT.release == "proportional" else 0,
-                       help="Unlocking: each benefit limit is available in proportion to the share of annual premium paid so far.")
-    loading = c3.slider("Instalment loading, % of premium", 0, 30, 0, step=1) / 100
-    elasticity = c3.slider("Sign-up elasticity to deposit (assumption)", 0.0, 1.0, float(sim_cfg["default_signup_elasticity"]), step=0.05,
-                           help="New business volume changes as (deposit / 10%) to the power of minus this number. Not estimated from data.")
-    st.form_submit_button("Run scenario", type="primary")
+# Each lever is a slider with a number box beside it; typing a value moves the slider and dragging the
+# slider updates the box. Results only rerun when "Run scenario" is pressed, so typing is never slowed down.
+RELEASE_OPTIONS = ["Full cover from first payment", "Benefits unlock with premium paid"]
+LEVER_DEFAULTS = {
+    "deposit": int(round(DEFAULT.deposit * 100)), "n_inst": DEFAULT.n_instalments, "grace": DEFAULT.grace_days,
+    "w_op": DEFAULT.waiting["outpatient"], "w_ip": DEFAULT.waiting["inpatient"], "w_mat": DEFAULT.waiting["maternity"],
+    "w_chr": DEFAULT.waiting["chronic"], "loading": int(round(DEFAULT.loading * 100)),
+    "elasticity": float(sim_cfg["default_signup_elasticity"]),
+    "release": RELEASE_OPTIONS[1] if DEFAULT.release == "proportional" else RELEASE_OPTIONS[0],
+}
 
-scn = SM.Scenario(deposit=deposit, n_instalments=n_inst, grace_days=grace,
-                  waiting={"outpatient": w_op, "inpatient": w_ip, "maternity": w_mat, "chronic": w_chr},
-                  release="full" if release.startswith("Full") else "proportional", loading=loading)
+with st.container(border=True):
+    st.markdown("**Product levers** (opens on an example redesign: 20% deposit, benefits unlock with premium paid). "
+                "Drag a slider or type a value in the box beside it.")
+    c1, c2, c3 = st.columns(3, gap="large")
+    with c1:
+        ui.linked_slider("Deposit, % of annual premium", 10, 40, LEVER_DEFAULTS["deposit"], 1, "deposit", fmt="%d%%")
+        ui.linked_slider("Number of monthly instalments", 1, 10, LEVER_DEFAULTS["n_inst"], 1, "n_inst")
+        ui.linked_slider("Grace period, days", 0, 30, LEVER_DEFAULTS["grace"], 1, "grace",
+                         help=f"Cover is suspended after grace; the policy lapses {cfg['product']['reinstatement_days']} days later if still unpaid.")
+    with c2:
+        ui.linked_slider("Outpatient wait, months", 0, 3, LEVER_DEFAULTS["w_op"], 1, "w_op")
+        ui.linked_slider("Inpatient wait, months", 0, 6, LEVER_DEFAULTS["w_ip"], 1, "w_ip")
+        ui.linked_slider("Maternity wait, months", 0, 12, LEVER_DEFAULTS["w_mat"], 1, "w_mat")
+        ui.linked_slider("Chronic wait, months", 0, 12, LEVER_DEFAULTS["w_chr"], 1, "w_chr")
+    with c3:
+        st.session_state.setdefault("release", LEVER_DEFAULTS["release"])
+        st.radio("Benefit release", RELEASE_OPTIONS, key="release",
+                 help="Unlocking: each benefit limit is available in proportion to the share of annual premium paid so far.")
+        ui.linked_slider("Loading, % of premium", 0, 30, LEVER_DEFAULTS["loading"], 1, "loading", fmt="%d%%")
+        ui.linked_slider("Sign-up elasticity (assumption)", 0.0, 1.0, LEVER_DEFAULTS["elasticity"], 0.05, "elasticity",
+                         fmt="%.2f", help="New business volume changes as (deposit / 10%) to the power of minus this number. Not estimated from data.")
+    current = {k: st.session_state[k] for k in LEVER_DEFAULTS}
+    st.session_state.setdefault("applied_levers", dict(LEVER_DEFAULTS))
+    b1, b2, b3 = st.columns([1, 1, 3], vertical_alignment="center")
+    if b1.button("Run scenario", type="primary", width="stretch"):
+        st.session_state["applied_levers"] = dict(current)
+    def _reset_levers():
+        for k, v in LEVER_DEFAULTS.items():
+            if k == "release":
+                st.session_state["release"] = v
+            else:
+                ui.set_linked(k, v)
+        st.session_state["applied_levers"] = dict(LEVER_DEFAULTS)
+
+    b2.button("Reset levers", width="stretch", on_click=_reset_levers)
+    if current != st.session_state["applied_levers"]:
+        b3.caption("You have changed the levers. Press Run scenario to update the results below.")
+
+lv = st.session_state["applied_levers"]
+elasticity = float(lv["elasticity"])
+scn = SM.Scenario(deposit=lv["deposit"] / 100, n_instalments=int(lv["n_inst"]), grace_days=int(lv["grace"]),
+                  waiting={"outpatient": int(lv["w_op"]), "inpatient": int(lv["w_ip"]), "maternity": int(lv["w_mat"]),
+                           "chronic": int(lv["w_chr"])},
+                  release="full" if lv["release"].startswith("Full") else "proportional", loading=lv["loading"] / 100)
 n_runs = sim_cfg["n_runs"]
 with st.spinner("Simulating..."):
     b = run(asdict(BASE), n_runs)

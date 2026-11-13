@@ -5,11 +5,11 @@
 </p>
 
 <p align="center">
-  <a href="https://instalment-persistency-lab.streamlit.app/"><img src="https://img.shields.io/badge/Open%20the%20live%20app-b5577a?style=flat-square&logo=streamlit&logoColor=white" alt="Open the live app"></a>
-  <img src="https://img.shields.io/badge/SQL-DuckDB-3a4250?style=flat-square&logo=duckdb&logoColor=white" alt="SQL with DuckDB">
-  <img src="https://img.shields.io/badge/Python-3.12-3a4250?style=flat-square&logo=python&logoColor=white" alt="Python 3.12">
-  <img src="https://img.shields.io/badge/R-survival-3a4250?style=flat-square&logo=r&logoColor=white" alt="R survival package">
-  <img src="https://img.shields.io/badge/tests-21%20passing-3a4250?style=flat-square" alt="21 tests passing">
+  <a href="https://instalment-persistency-lab.streamlit.app/"><img src="https://img.shields.io/badge/Open%20the%20live%20app-c47a06?style=flat-square&logo=streamlit&logoColor=white" alt="Open the live app"></a>
+  <img src="https://img.shields.io/badge/SQL-DuckDB-0F1117?style=flat-square&logo=duckdb&logoColor=white" alt="SQL with DuckDB">
+  <img src="https://img.shields.io/badge/Python-3.12-0F1117?style=flat-square&logo=python&logoColor=white" alt="Python 3.12">
+  <img src="https://img.shields.io/badge/R-survival-0F1117?style=flat-square&logo=r&logoColor=white" alt="R survival package">
+  <img src="https://img.shields.io/badge/tests-24%20passing-0F1117?style=flat-square" alt="24 tests passing">
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@
 
 ## The question
 
-Some health covers in Kenya now start on the first instalment. The member pays a small deposit, from 10% of the annual premium, and the rest over up to 10 months. That widens access to cover. It also lets a member pay a little, claim early and stop paying, so the insurer pays claims against premium it never collects.
+Pay-as-you-go health cover is now sold in Kenya: the policy starts on the first instalment. The member pays a small deposit, from 10% of the annual premium, and the rest over up to 10 months. That widens access to cover. It also lets a member pay a little, claim early and stop paying, so the insurer pays claims against premium it never collects.
 
 This lab asks three things of a seeded synthetic book of 20,000 policies:
 

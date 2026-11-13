@@ -1,13 +1,13 @@
 [theme]
 base = "light"
-primaryColor = "#2a5d8f"
-backgroundColor = "#f9f9f7"
+primaryColor = "#34497d"
+backgroundColor = "#faf9f6"
 secondaryBackgroundColor = "#eef0f2"
 textColor = "#1d2430"
 font = "sans-serif"
-headingFont = "serif"
+headingFont = "EB Garamond:https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600;700&display=swap"
 codeFont = "monospace"
-baseRadius = "0.5rem"
+baseRadius = "0.35rem"
 borderColor = "#e3e5e8"
 
 [server]

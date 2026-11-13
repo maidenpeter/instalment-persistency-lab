@@ -97,7 +97,7 @@ if len(cl):
                                          line=dict(color="white", width=2)),
                              customdata=cl[["amount_kes", "detail"]],
                              hovertemplate="%{x|%d %b %Y}<br>%{customdata[1]}<br>KES %{customdata[0]:,.0f}<extra></extra>"))
-EVENT_STYLE = {"suspended": ("Suspended", ui.APRICOT), "reinstated": ("Reinstated", ui.TEAL), "lapsed": ("Lapsed", ui.ACCENT),
+EVENT_STYLE = {"suspended": ("Suspended", ui.ORCHID), "reinstated": ("Reinstated", ui.TEAL), "lapsed": ("Lapsed", ui.ACCENT),
                "completed": ("Paid up", ui.PRIMARY)}
 shown = events[events["event"].isin(EVENT_STYLE)].reset_index(drop=True)
 for i, e in shown.iterrows():
@@ -141,7 +141,7 @@ ORDER BY instalment_no
 """
 peer = ui.q(PEER_SQL, (p["income_type"], p["plan_tier"], p["payment_method"]))
 
-OUTCOME_COLOR = {"On time": ui.TEAL, "Late, paid in grace": ui.APRICOT, "Late, reinstated": ui.ORCHID,
+OUTCOME_COLOR = {"On time": ui.TEAL, "Late, paid in grace": ui.PRIMARY, "Late, reinstated": ui.ORCHID,
                  "Unpaid, policy lapsed": ui.ACCENT, "Due, not yet paid": ui.ACCENT}
 left, right = st.columns(2)
 with left:

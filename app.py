@@ -53,7 +53,7 @@ def home() -> None:
     ui.footer()
 
 
-st.logo(str(ui.ASSETS / "wordmark.svg"), size="large")
+st.logo(str(ui.ASSETS / "mark.svg"), size="large")  # the app name is set beside it in the top bar (src/ui.py)
 pages = [st.Page(home, title="Home", default=True)]
 pages += [st.Page(c["path"], title=c["nav"], url_path=c["url"]) for c in ui.CHAPTERS]
 pages += [st.Page(ui.APPENDIX["path"], title=ui.APPENDIX["nav"], url_path=ui.APPENDIX["url"])]

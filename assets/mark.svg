@@ -1,3 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" role="img" aria-label="Instalment Persistency Lab">
-  <path d="M28 8 C30 22 34 26 48 28 C34 30 30 34 28 48 C26 34 22 30 8 28 C22 26 26 22 28 8 Z" fill="#b5577a"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Instalment Persistency Lab">
+  <title>Faceted gem mark (NuruOps design)</title>
+  <g stroke="#0F1117" stroke-width="0.6" stroke-linejoin="round">
+    <polygon points="32,3 17,22 32,32" fill="#FFD27A"/>
+    <polygon points="32,3 32,32 47,22" fill="#FFC24B"/>
+    <polygon points="32,3 3,30 17,22" fill="#FFCF6B"/>
+    <polygon points="32,3 47,22 61,30" fill="#E8960C"/>
+    <polygon points="3,30 17,22 32,32" fill="#F0A927"/>
+    <polygon points="47,22 61,30 32,32" fill="#C77A00"/>
+    <polygon points="3,30 32,32 18,42" fill="#C77A00"/>
+    <polygon points="61,30 46,42 32,32" fill="#9E6200"/>
+    <polygon points="32,32 18,42 32,61" fill="#B36E00"/>
+    <polygon points="32,32 32,61 46,42" fill="#8A5600"/>
+    <polygon points="3,30 18,42 32,61" fill="#7A4C00"/>
+    <polygon points="61,30 32,61 46,42" fill="#6B4200"/>
+  </g>
 </svg>

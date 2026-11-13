@@ -1,40 +1,60 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="t d">
-  <title id="t">Instalment Persistency Lab</title>
-  <desc id="d">A story in six chapters about health cover that starts on the first instalment: who lapses, what it costs, and which product levers fix it. Synthetic portfolio, illustrative only.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" role="img" aria-labelledby="t d">
+  <title id="t">Instalment Persistency Lab: pay-as-you-go health cover</title>
+  <desc id="d">A story in six chapters about health cover paid in instalments: who lapses, what it costs, and which product levers fix it. Synthetic portfolio, illustrative only.</desc>
   <defs>
+    <radialGradient id="bg" cx="78%" cy="18%" r="95%">
+      <stop offset="0" stop-color="#20232E"/>
+      <stop offset="1" stop-color="#0F1117"/>
+    </radialGradient>
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#E8960C" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#E8960C" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#E8960C" stop-opacity="0"/>
+    </linearGradient>
     <style>
-      .serif { font-family: 'Source Serif 4', 'Source Serif Pro', Georgia, 'Times New Roman', serif; }
+      .serif { font-family: 'EB Garamond', Garamond, Georgia, 'Times New Roman', serif; }
       .sans { font-family: 'Source Sans 3', 'Source Sans Pro', 'Segoe UI', Helvetica, Arial, sans-serif; }
-      .kicker { font-size: 14px; letter-spacing: 2.4px; fill: #b5577a; font-weight: 600; }
-      .h1 { font-size: 60px; fill: #1d2430; font-weight: 600; }
-      .lede { font-size: 21px; fill: #3a4250; }
-      .num { font-size: 34px; fill: #1d2430; font-weight: 600; }
-      .lab { font-size: 15px; fill: #52514e; }
-      .fine { font-size: 13px; fill: #6b6a66; }
+      .tag { font-size: 14px; letter-spacing: 3.2px; fill: #E8A33A; font-weight: 700; }
+      .h1 { font-size: 64px; fill: #FAFAFA; font-weight: 600; }
+      .lede { font-size: 21px; fill: #c9c6bc; }
+      .num { font-size: 38px; fill: #FFC24B; font-weight: 600; }
+      .lab { font-size: 15px; fill: #b4b1a8; }
+      .fine { font-size: 13px; fill: #888680; }
     </style>
   </defs>
-  <rect width="1280" height="400" rx="20" fill="#f9f9f7"/>
-  <rect x="0.5" y="0.5" width="1279" height="399" rx="20" fill="none" stroke="#e3e5e8"/>
+  <rect width="1280" height="420" rx="18" fill="url(#bg)"/>
+  <rect x="0.75" y="0.75" width="1278.5" height="418.5" rx="17.5" fill="none" stroke="#E8960C" stroke-opacity="0.35"/>
 
-  <path d="M70 52 C71 60 73 62 81 63 C73 64 71 66 70 74 C69 66 67 64 59 63 C67 62 69 60 70 52 Z" fill="#b5577a"/>
-  <text x="92" y="69" class="sans kicker">A STORY IN SIX CHAPTERS</text>
+  <g transform="translate(60,52) scale(1.25)">
+    <g stroke="#0F1117" stroke-width="0.6" stroke-linejoin="round">
+      <polygon points="32,3 17,22 32,32" fill="#FFD27A"/>
+      <polygon points="32,3 32,32 47,22" fill="#FFC24B"/>
+      <polygon points="32,3 3,30 17,22" fill="#FFCF6B"/>
+      <polygon points="32,3 47,22 61,30" fill="#E8960C"/>
+      <polygon points="3,30 17,22 32,32" fill="#F0A927"/>
+      <polygon points="47,22 61,30 32,32" fill="#C77A00"/>
+      <polygon points="3,30 32,32 18,42" fill="#C77A00"/>
+      <polygon points="61,30 46,42 32,32" fill="#9E6200"/>
+      <polygon points="32,32 18,42 32,61" fill="#B36E00"/>
+      <polygon points="32,32 32,61 46,42" fill="#8A5600"/>
+      <polygon points="3,30 18,42 32,61" fill="#7A4C00"/>
+      <polygon points="61,30 32,61 46,42" fill="#6B4200"/>
+    </g>
+  </g>
+  <text x="160" y="110" class="serif h1">Instalment Persistency Lab</text>
+  <text x="162" y="140" class="sans tag">PAY-AS-YOU-GO HEALTH COVER</text>
 
-  <text x="60" y="142" class="serif h1">Instalment Persistency Lab</text>
-  <text x="60" y="184" class="sans lede">Who lapses, what it costs, and which product levers fix it, for health cover</text>
-  <text x="60" y="212" class="sans lede">that starts on the very first instalment.</text>
+  <text x="60" y="200" class="sans lede">Who lapses, what it costs, and which product levers fix it, for health cover that</text>
+  <text x="60" y="228" class="sans lede">starts on a 10% deposit and is paid off in monthly instalments. A story in six chapters.</text>
 
-  <rect x="60" y="250" width="360" height="104" rx="10" fill="#ffffff" stroke="#e3e5e8"/>
-  <rect x="460" y="250" width="360" height="104" rx="10" fill="#ffffff" stroke="#e3e5e8"/>
-  <rect x="860" y="250" width="360" height="104" rx="10" fill="#ffffff" stroke="#e3e5e8"/>
-  <text x="84" y="296" class="sans num">56.4%</text>
-  <text x="84" y="324" class="sans lab">of policies still in force after</text>
-  <text x="84" y="342" class="sans lab">their 10th instalment</text>
-  <text x="484" y="296" class="sans num">KES 1.14</text>
-  <text x="484" y="324" class="sans lab">paid in claims for every KES 1</text>
-  <text x="484" y="342" class="sans lab">a lapsing member paid in</text>
-  <text x="884" y="296" class="sans num">KES 48.8m</text>
-  <text x="884" y="324" class="sans lab">claims above premium collected</text>
-  <text x="884" y="342" class="sans lab">on policies that lapsed</text>
+  <rect x="60" y="256" width="1160" height="1" fill="url(#rule)"/>
 
-  <text x="1220" y="384" text-anchor="end" class="sans fine">Synthetic portfolio. Illustrative only.</text>
+  <text x="60" y="318" class="serif num">56.4%</text>
+  <text x="60" y="346" class="sans lab">of policies still in force after their 10th instalment</text>
+  <text x="460" y="318" class="serif num">KES 1.14</text>
+  <text x="460" y="346" class="sans lab">paid in claims for every KES 1 a lapsing member paid in</text>
+  <text x="860" y="318" class="serif num">KES 48.8m</text>
+  <text x="860" y="346" class="sans lab">claims above premium collected on lapsed policies</text>
+
+  <text x="1220" y="398" text-anchor="end" class="sans fine">Synthetic portfolio. Illustrative only.</text>
 </svg>

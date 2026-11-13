@@ -37,7 +37,7 @@ ui.takeaway(
 ui.show_sql(CTC_SQL, ["v_claims_to_collected"])
 
 st.write("")
-tabs = st.tabs(['When members lapse', 'Claim, then lapse', 'Front-loaded claims', 'Leakage by segment'])
+tabs = st.tabs([':material/event_busy: When members lapse', ':material/medical_services: Claim, then lapse', ':material/vertical_align_top: Front-loaded claims', ':material/water_drop: Leakage by segment'])
 
 with tabs[0]:
     DUR_SQL = """

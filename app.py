@@ -38,14 +38,14 @@ def home() -> None:
     )
     ui.show_sql(";\n\n".join(HOME_SQL.values()), ["v_lapse_decrements", "v_claims_to_collected", "v_leakage"])
 
-    st.subheader("The story in six chapters")
+    st.subheader(":material/auto_stories: The story in six chapters")
     for i, c in enumerate(ui.CHAPTERS, 1):
         left, right = st.columns([0.07, 0.93], vertical_alignment="center")
         left.markdown(f'<div class="kicker" style="font-size:0.95rem">{i:02d}</div>', unsafe_allow_html=True)
         with right:
-            st.page_link(c["path"], label=f"**{c['title']}**")
+            st.page_link(c["path"], label=f"**{c['title']}**", icon=c["icon"])
             st.caption(c["teaser"])
-    st.page_link(ui.APPENDIX["path"], label=f"Appendix: {ui.APPENDIX['title']}")
+    st.page_link(ui.APPENDIX["path"], label=f"Appendix: {ui.APPENDIX['title']}", icon=ui.APPENDIX["icon"])
     st.caption(
         "SQL (DuckDB) computes every business metric, Python generates the data and fits the survival models and simulation, "
         "and R cross-checks the survival estimates."
@@ -54,7 +54,7 @@ def home() -> None:
 
 
 st.logo(str(ui.ASSETS / "mark.svg"), size="large")  # the app name is set beside it in the top bar (src/ui.py)
-pages = [st.Page(home, title="Home", default=True)]
-pages += [st.Page(c["path"], title=c["nav"], url_path=c["url"]) for c in ui.CHAPTERS]
-pages += [st.Page(ui.APPENDIX["path"], title=ui.APPENDIX["nav"], url_path=ui.APPENDIX["url"])]
+pages = [st.Page(home, title="Home", icon=":material/home:", default=True)]
+pages += [st.Page(c["path"], title=c["nav"], url_path=c["url"], icon=c["icon"]) for c in ui.CHAPTERS]
+pages += [st.Page(ui.APPENDIX["path"], title=ui.APPENDIX["nav"], url_path=ui.APPENDIX["url"], icon=ui.APPENDIX["icon"])]
 st.navigation(pages, position="top").run()

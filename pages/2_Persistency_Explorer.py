@@ -60,7 +60,7 @@ if 3 in spike.index and 2 in spike.index:
         "the point where members who joined to claim, and have now claimed, stop paying."
     )
 
-tabs = st.tabs(["Decrement table", "Cohort heatmap", "Kaplan-Meier curves"])
+tabs = st.tabs([":material/table_chart: Decrement table", ":material/grid_on: Cohort heatmap", ":material/show_chart: Kaplan-Meier curves"])
 
 with tabs[0]:
     tbl = pd.DataFrame({

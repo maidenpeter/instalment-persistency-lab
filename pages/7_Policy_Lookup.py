@@ -69,7 +69,7 @@ st.markdown(
 ui.show_sql(POLICY_SQL.replace("?", f"'{pid}'"), ["v_policy"])
 
 # ------------------------------------------------------------- cash in and out
-st.subheader("Cash in and cash out")
+st.subheader(":material/account_balance_wallet: Cash in and cash out")
 CASH_SQL = """
 SELECT flow_date, flow, amount_kes, detail, premium_to_date_kes, claims_to_date_kes
 FROM v_policy_cashflows
@@ -122,7 +122,7 @@ else:
 ui.show_sql(CASH_SQL.replace("?", f"'{pid}'") + ";\n\n" + EVENTS_SQL.replace("?", f"'{pid}'"), ["v_policy_cashflows"])
 
 # ------------------------------------------------------------- instalment record and risk trend
-st.subheader("Instalment by instalment")
+st.subheader(":material/calendar_month: Instalment by instalment")
 INST_SQL = """
 SELECT instalment_no, due_date, amount_due_kes, paid_date, amount_paid_kes, days_late, outcome
 FROM v_policy_instalments
@@ -214,7 +214,7 @@ ui.show_sql(INST_SQL.replace("?", f"'{pid}'") + ";\n\n" + FEAT_SQL.replace("?", 
 # ------------------------------------------------------------- claims and peers
 left, right = st.columns([1.3, 1])
 with left:
-    st.subheader("Claims")
+    st.subheader(":material/medical_services: Claims")
     CLAIMS_SQL = """
 SELECT claim_id, service_date, paid_date, benefit_type, amount_paid_kes
 FROM claims
@@ -234,7 +234,7 @@ ORDER BY service_date
         )
     ui.show_sql(CLAIMS_SQL.replace("?", f"'{pid}'"))
 with right:
-    st.subheader("Against similar policies")
+    st.subheader(":material/groups: Against similar policies")
     PEERS_SQL = """
 SELECT
     COUNT(*)                                                         AS policies,

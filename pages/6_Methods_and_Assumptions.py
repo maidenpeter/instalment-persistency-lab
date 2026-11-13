@@ -15,7 +15,7 @@ ui.page(
 )
 cfg = ui.config()
 
-tabs = st.tabs(["Data", "Assumptions", "Definitions", "Survival models", "R cross-check", "Simulator check", "Limitations", "IFRS 17 note"])
+tabs = st.tabs([":material/database: Data", ":material/tune: Assumptions", ":material/menu_book: Definitions", ":material/monitor_heart: Survival models", ":material/fact_check: R cross-check", ":material/science: Simulator check", ":material/warning: Limitations", ":material/account_balance: IFRS 17 note"])
 
 # ------------------------------------------------------------- data dictionary
 DICT = {

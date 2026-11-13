@@ -43,7 +43,7 @@ with right:
     ui.plot(fig, 330)
     ui.takeaway("On day one the member has paid 10% of the premium but can claim against 100% of the annual limits.")
 
-st.subheader("What the synthetic book shows")
+st.subheader(":material/insights: What the synthetic book shows")
 dec = ui.q("SELECT duration, exposed, lapses, q, persistency FROM v_lapse_decrements ORDER BY duration")
 ctc = ui.q("SELECT persistency_group, policies, collected_kes, claims_paid_kes, claims_to_collected "
            "FROM v_claims_to_collected WHERE deposit_band = 'All'").set_index("persistency_group")
@@ -79,7 +79,7 @@ FROM v_leakage;
     ["v_lapse_decrements", "v_claims_to_collected", "v_leakage"],
 )
 
-st.subheader("The three questions")
+st.subheader(":material/help: The three questions")
 a, b, c = st.columns(3)
 a.markdown("**Who lapses, and when?**  \nLapse decrements by policy duration, cohort and segment, with exposure and confidence intervals. Chapter 2.")
 b.markdown("**What does lapse cost?**  \nClaims paid against premium actually collected, split by stayers and lapsers, and leakage in KES. Chapter 3.")

@@ -18,20 +18,20 @@ ASSETS = Path(__file__).resolve().parents[1] / "assets"
 
 # The story, in order. Every page belongs to one chapter; Methods is the appendix.
 CHAPTERS = [
-    {"key": "problem", "path": "pages/1_The_Problem.py", "nav": "The Problem", "url": "the-problem",
+    {"key": "problem", "icon": ":material/report:", "path": "pages/1_The_Problem.py", "nav": "The Problem", "url": "the-problem",
      "title": "The problem", "teaser": "Cover that starts on a 10% deposit runs ahead of the cash."},
-    {"key": "who", "path": "pages/2_Persistency_Explorer.py", "nav": "Who Lapses", "url": "who-lapses",
+    {"key": "who", "icon": ":material/trending_down:", "path": "pages/2_Persistency_Explorer.py", "nav": "Who Lapses", "url": "who-lapses",
      "title": "Who lapses, and when", "teaser": "Lapse rates month by month, by segment and by cohort."},
-    {"key": "cost", "path": "pages/3_Anti_Selection_and_Leakage.py", "nav": "What It Costs", "url": "what-it-costs",
+    {"key": "cost", "icon": ":material/payments:", "path": "pages/3_Anti_Selection_and_Leakage.py", "nav": "What It Costs", "url": "what-it-costs",
      "title": "What lapse costs", "teaser": "Claims paid against premium actually collected, and the leakage in KES."},
-    {"key": "one", "path": "pages/7_Policy_Lookup.py", "nav": "One Policy", "url": "one-policy",
+    {"key": "one", "icon": ":material/person_search:", "path": "pages/7_Policy_Lookup.py", "nav": "One Policy", "url": "one-policy",
      "title": "One policy, start to finish", "teaser": "Follow a single member through a year: paid in, paid out, slipped, lapsed."},
-    {"key": "warn", "path": "pages/4_Early_Warning_Model.py", "nav": "Early Warning", "url": "early-warning",
+    {"key": "warn", "icon": ":material/notifications_active:", "path": "pages/4_Early_Warning_Model.py", "nav": "Early Warning", "url": "early-warning",
      "title": "Catching it early", "teaser": "Who will miss the next instalment, and who to call this week."},
-    {"key": "fix", "path": "pages/5_Product_Levers_Simulator.py", "nav": "Fixing It", "url": "fixing-it",
+    {"key": "fix", "icon": ":material/tune:", "path": "pages/5_Product_Levers_Simulator.py", "nav": "Fixing It", "url": "fixing-it",
      "title": "Fixing the product", "teaser": "Deposit, instalments, grace, waiting periods and benefit release, tested."},
 ]
-APPENDIX = {"key": "methods", "path": "pages/6_Methods_and_Assumptions.py", "nav": "Methods", "url": "methods",
+APPENDIX = {"key": "methods", "icon": ":material/menu_book:", "path": "pages/6_Methods_and_Assumptions.py", "nav": "Methods", "url": "methods",
             "title": "Methods and assumptions", "teaser": "Data, every assumption, diagnostics and the R cross-check."}
 
 # Navy and amber palette, matched to the NuruOps gem. Categorical order validated for colour-blind
@@ -85,8 +85,11 @@ _CSS = """
   /* when the menu folds into the light side panel, the name turns dark so it stays readable */
   [data-testid="stSidebar"] :is([data-testid="stLogoLink"], div:has(> img.stLogo))::after {color: #12151d;}
   [data-testid="stSidebar"] :is([data-testid="stLogoLink"], div:has(> img.stLogo))::before {color: #a86a05;}
-  a[data-testid="stTopNavLink"] {color: #c9c6bc !important; border-radius: 6px;}
-  a[data-testid="stTopNavLink"] p, a[data-testid="stTopNavLink"] span {color: inherit !important; font-size: 0.93rem;}
+  a[data-testid="stTopNavLink"] {color: #c9c6bc !important; border-radius: 6px; padding: 0 6px !important; gap: 0.3rem;}
+  a[data-testid="stTopNavLink"] p, a[data-testid="stTopNavLink"] span {color: inherit !important; font-size: 0.87rem;}
+  a[data-testid="stTopNavLink"] [data-testid="stIconMaterial"] {font-size: 1.05rem !important; color: #E8A33A !important; opacity: 0.85;}
+  header button[data-testid="stTopNavSection"], header button[data-testid="stTopNavSection"] p,
+  header button[data-testid="stTopNavSection"] span {color: #c9c6bc !important;}
   a[data-testid="stTopNavLink"]:hover {color: #ffffff !important; background: rgba(255,255,255,0.06) !important;}
   a[data-testid="stTopNavLink"][aria-current="page"] {color: #FFC24B !important; background: rgba(232,150,12,0.12) !important;}
   header [data-testid="stMainMenuButton"] svg, header [data-testid="stExpandSidebarButton"] span,
@@ -95,7 +98,8 @@ _CSS = """
   @media (max-width: 640px) { header :is([data-testid="stLogoLink"], div:has(> img.stLogo))::after {content: "IPL";}
       header :is([data-testid="stLogoLink"], div:has(> img.stLogo))::before {letter-spacing: 0.12em;} }
 
-  .block-container {padding-top: 6rem; padding-bottom: 2.5rem; max-width: 1160px;}
+  .block-container {padding-top: 6rem; padding-bottom: 2.5rem; padding-left: 3rem; padding-right: 3rem; max-width: none;}
+  @media (max-width: 900px) { .block-container {padding-left: 1rem; padding-right: 1rem;} }
   h1 {font-weight: 600; letter-spacing: -0.005em; font-size: 2.7rem; padding-top: 0; padding-bottom: 0.1rem; color: #12151d;}
   h2, h3 {font-weight: 600; color: #12151d;}
   [data-testid="stMarkdownContainer"] h3 {padding-top: 1.3rem; font-size: 1.6rem;}
@@ -104,7 +108,7 @@ _CSS = """
   .kicker::before {content: ""; display: inline-block; width: 22px; height: 1px; background: #c47a06; vertical-align: middle;
       margin-right: 0.6rem;}
   .synthetic {font-size: 0.8rem; color: #6b6a66; margin: -0.2rem 0 0.9rem 0;}
-  .lede {font-size: 1.1rem; color: #2b3340; line-height: 1.65; max-width: 60rem;}
+  .lede {font-size: 1.1rem; color: #2b3340; line-height: 1.65; max-width: 72rem;}
   .takeaway {color: #1d2430; font-size: 0.96rem; margin: -0.3rem 0 1.4rem 0; padding-left: 0.85rem;
       border-left: 2px solid #c47a06;}
   .kpi {background: #ffffff; border: 1px solid #e6e4dd; border-top: 2px solid #12151d; border-radius: 4px;

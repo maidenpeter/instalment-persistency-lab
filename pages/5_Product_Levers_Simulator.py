@@ -63,7 +63,7 @@ LEVER_DEFAULTS = {
 }
 
 with st.container(border=True):
-    st.markdown("**Product levers** (opens on an example redesign: 20% deposit, benefits unlock with premium paid). "
+    st.markdown(":material/tune: **Product levers** (opens on an example redesign: 20% deposit, benefits unlock with premium paid). "
                 "Drag a slider or type a value in the box beside it.")
     c1, c2, c3 = st.columns(3, gap="large")
     with c1:
@@ -125,7 +125,7 @@ def fmt_be(x):
 
 
 # ------------------------------------------------------------- headline comparison
-st.subheader("Base case against your scenario")
+st.subheader(":material/compare: Base case against your scenario")
 st.caption(
     f"Base case: {ui.pct(BASE.deposit, 0)} deposit, {BASE.n_instalments} instalments, {BASE.grace_days} days grace, waiting periods "
     f"{BASE.waiting['outpatient']}/{BASE.waiting['inpatient']}/{BASE.waiting['maternity']}/{BASE.waiting['chronic']} months "
@@ -202,7 +202,7 @@ with right:
     ui.takeaway(f"Margin per policy written: {ui.kes(b['margin_per_policy'])} base, {ui.kes(s['margin_per_policy'])} scenario, "
                 f"after a {ui.pct(inp.expense_ratio, 0)} expense load on collected premium.")
 
-st.subheader("Conversion trade-off")
+st.subheader(":material/balance: Conversion trade-off")
 with st.spinner("Tracing the deposit curve..."):
     dc = deposit_curve(asdict(replace(scn, deposit=BASE.deposit)))
 dc["signups"] = [SM.signup_factor(d, BASE.deposit, elasticity) for d in dc["deposit"]]

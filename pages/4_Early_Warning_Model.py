@@ -24,7 +24,7 @@ st.markdown(
 )
 
 # ------------------------------------------------------------- comparison
-st.subheader("Logistic regression against gradient boosting")
+st.subheader(":material/compare_arrows: Logistic regression against gradient boosting")
 m = ew.metrics.set_index("model")
 c1, c2, c3, c4 = st.columns(4)
 ui.kpi(c1, "Test AUC, logistic regression", f"{m.loc['Logistic regression', 'test_auc']:.3f}", "Later cohorts")
@@ -82,7 +82,7 @@ with st.expander("What drives the logistic regression score"):
 ui.show_sql(M.FEATURES_SQL, ["v_model_features"])
 
 # ------------------------------------------------------------- call list
-st.subheader("Call list this week")
+st.subheader(":material/call: Call list this week")
 val = pd.Timestamp(cfg["book"]["valuation_date"])
 st.markdown(
     f"In-force members with an instalment due in the {cfg['model']['call_horizon_days']} days after the valuation date "

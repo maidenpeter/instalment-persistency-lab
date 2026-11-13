@@ -171,6 +171,7 @@ def page(key: str, lede: str | None = None) -> None:
     st.session_state["_page_key"] = key
     title = f"{chapter['title']} | {APP_NAME}" if key != "home" else APP_NAME
     st.set_page_config(page_title=title, page_icon=str(ASSETS / "mark.svg"), layout="wide", initial_sidebar_state="collapsed")
+    _refresh_if_sources_changed()
     st.markdown(_CSS, unsafe_allow_html=True)
     if n:
         st.markdown(f'<div class="kicker">Chapter {n} of {len(CHAPTERS)}</div>', unsafe_allow_html=True)
@@ -182,6 +183,26 @@ def page(key: str, lede: str | None = None) -> None:
     st.markdown(f'<div class="synthetic">{SYNTHETIC_LABEL}</div>', unsafe_allow_html=True)
     if lede:
         st.markdown(f'<p class="lede">{lede}</p>', unsafe_allow_html=True)
+
+
+@st.cache_resource(show_spinner=False)
+def _loaded_sources() -> dict:
+    return {}
+
+
+def _refresh_if_sources_changed() -> None:
+    """Clear every cache when the data, SQL, config or model code on disk changes.
+
+    A redeploy that changes only the parquet files leaves the cached functions' code untouched,
+    so Streamlit would otherwise keep serving the database built from the old files.
+    """
+    stamp = A.source_stamp()
+    seen = _loaded_sources()
+    if seen.get("stamp") != stamp:  # also on first run, in case caches survived a redeploy
+        st.cache_data.clear()
+        st.cache_resource.clear()
+        seen = _loaded_sources()
+    seen["stamp"] = stamp
 
 
 @st.cache_resource(show_spinner="Building the synthetic book and SQL views...")

@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/SQL-DuckDB-0F1117?style=flat-square&logo=duckdb&logoColor=white" alt="SQL with DuckDB">
   <img src="https://img.shields.io/badge/Python-3.12-0F1117?style=flat-square&logo=python&logoColor=white" alt="Python 3.12">
   <img src="https://img.shields.io/badge/R-survival-0F1117?style=flat-square&logo=r&logoColor=white" alt="R survival package">
-  <img src="https://img.shields.io/badge/tests-24%20passing-0F1117?style=flat-square" alt="24 tests passing">
+  <img src="https://img.shields.io/badge/tests-25%20passing-0F1117?style=flat-square" alt="25 tests passing">
 </p>
 
 <p align="center">

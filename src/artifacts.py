@@ -20,10 +20,19 @@ ARTIFACT_PATH = ROOT / "models" / "artifacts.pkl"
 FINGERPRINT_FILES = ["src/config.yaml", "src/generate.py", "src/db.py", "src/models.py", "src/simulate.py"]
 
 
+def source_paths() -> list[Path]:
+    """Config, data, SQL and model code: everything the saved results depend on."""
+    return [ROOT / f for f in FINGERPRINT_FILES] + sorted((ROOT / "sql").glob("*.sql")) + sorted((ROOT / "data").glob("*.parquet"))
+
+
+def source_stamp() -> tuple:
+    """Cheap change check on the source files (name, size, modified time), for cache invalidation."""
+    return tuple((p.name, s.st_size, s.st_mtime_ns) for p in source_paths() for s in [p.stat()])
+
+
 def fingerprint() -> str:
     h = hashlib.sha256()
-    paths = [ROOT / f for f in FINGERPRINT_FILES] + sorted((ROOT / "sql").glob("*.sql")) + sorted((ROOT / "data").glob("*.parquet"))
-    for p in paths:
+    for p in source_paths():
         data = p.read_bytes()
         if p.suffix != ".parquet":
             data = data.replace(b"\r\n", b"\n")  # same hash on Windows and Linux checkouts

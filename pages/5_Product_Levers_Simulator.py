@@ -133,7 +133,7 @@ def _be_state(x):
         return "would need a loading above 100% to break even"
     if x <= 0:
         return f"needs no loading and has {ui.pct(-x)} headroom"
-    return f"needs a {ui.pct(x)} loading to break even"
+    return f"needs a loading of {ui.pct(x)} to break even"
 
 
 def _be_sentence(base, scen):
